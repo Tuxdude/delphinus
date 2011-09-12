@@ -22,10 +22,15 @@
 #
 
 TOUCH := touch
+CD := cd
 CP := cp
 MV := mv
 RM := rm -f
 RM_RECURSIVE := rm -rf
 MKDIR := mkdir -p
 RMDIR := rmdir
+GREP := grep
+SED := sed
+SVN := svn
+TAR := tar
 

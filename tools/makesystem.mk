@@ -42,7 +42,7 @@ else
 endif
 
 define ExecWithMsg
-  @echo -e "\n=== $(1) ==="
+  @echo -e "\n=== $(1)  ==="
   $(silent)$(2)
 endef
 
@@ -60,11 +60,24 @@ else
 endif
 EXPORT_LIBS_DIR := $(EXPORTS_DIR)/libs
 EXPORT_BINS_DIR := $(EXPORTS_DIR)/bin
+EXPORT_RELEASES_DIR := $(EXPORTS_DIR)/releases
 $(shell $(MKDIR) $(EXPORTS_DIR))
 $(shell $(MKDIR) $(EXPORT_HEADERS_BASE_DIR))
 $(shell $(MKDIR) $(EXPORT_HEADERS_DIR))
 $(shell $(MKDIR) $(EXPORT_LIBS_DIR))
 $(shell $(MKDIR) $(EXPORT_BINS_DIR))
+$(shell $(MKDIR) $(EXPORT_RELEASES_DIR))
+
+# Settings for the release
+RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
+DELPHINUS := delphinus
+ifeq ($(MAKECMDGOALS),release)
+    SVN_INFO := $(shell $(SVN) info $(BASE_DIR) 2> /dev/null)
+    ifeq ($(SVN_INFO),)
+        $(error "Cannot build the release files from a non-svn repo, aborting...")
+    endif
+    BRANCH_NAME := $(shell echo $(SVN_INFO) | $(GREP) URL | $(SED) 's/^.*\/\([a-zA-Z0-9.\-]*\)$$/\1/')
+endif
 
 # Setup compilation and linker flags
 OPTIMIZATION_FLAGS := -O3
@@ -172,13 +185,13 @@ endif
 
 # Dependencies and rules
 $(BUILD_DIR)/%.o: %.cpp
-	@echo -e "\n=== $< -> $@ ==="
+	@echo -e "\n===  $< -> $@  ==="
 	$(silent)$(MAKEDEPEND_CXX) $(CXXFLAGS) $(CPPFLAGS) -MM -MF $(DEP_DIR)/$*.dep -MT $@ $<
 	$(silent)$(GENERATE_DEP_FILES)
 	$(silent)$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o: %.c
-	@echo -e "\n=== $< -> $@ ==="
+	@echo -e "\n===  $< -> $@  ==="
 	$(silent)$(MAKEDEPEND_C) $(CFLAGS) $(CPPFLAGS) -MM -o $(DEP_DIR)/$*.dep $<
 	$(silent)$(GENERATE_DEP_FILES)
 	$(silent)$(CC) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
@@ -195,6 +208,24 @@ local_all: $(TARGET)
 local_clean:
 	$(call ExecWithMsg, "Cleaning `pwd`", $(RM_RECURSIVE) $(CLEANUP_FILES); $(REMOVE_EXPORT_HEADERS_PREFIX_DIR))
 
+# The target release only builds if the entire build goes through although it
+# doesn't require any files to be exported from the build itself
+release:
+	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
+	$(silent)$(MAKE) -C $(BASE_DIR)
+	$(silent)$(MKDIR) $(RELEASE_TEMP_DIR)
+	$(silent)$(SVN) export -q $(BASE_DIR) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME)
+	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz  ==="
+	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) czf $(DELPHINUS)-$(BRANCH_NAME).tar.gz $(DELPHINUS)-$(BRANCH_NAME)
+	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz $(EXPORT_RELEASES_DIR)
+	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2  ==="
+	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) cjf $(DELPHINUS)-$(BRANCH_NAME).tar.bz2 $(DELPHINUS)-$(BRANCH_NAME)
+	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2 $(EXPORT_RELEASES_DIR)
+	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz  ==="
+	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) cJf $(DELPHINUS)-$(BRANCH_NAME).tar.xz $(DELPHINUS)-$(BRANCH_NAME)
+	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz $(EXPORT_RELEASES_DIR)
+	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
+
 help:
 	@echo -e "Buildable targets: $(TARGET)"
 	@echo -e "make/make all     : Build the targets and the dependencies"
@@ -204,5 +235,5 @@ help:
 	@echo -e "make help         : Display this help message"
 
 
-.PHONY: all local_all local_clean distclean help .prereqs .export_dist
+.PHONY: all local_all local_clean distclean help .prereqs .export_dist release
 
