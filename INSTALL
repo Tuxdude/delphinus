@@ -1,0 +1,7 @@
+Configuration and Installation options
+======================================
+
+To build and install using the standard GNU C++ compiler toolchain run:
+make
+
+Other configuration options will be updated here soon.
