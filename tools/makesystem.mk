@@ -72,11 +72,13 @@ $(shell $(MKDIR) $(EXPORT_RELEASES_DIR))
 RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
 DELPHINUS := delphinus
 ifeq ($(MAKECMDGOALS),release)
-    SVN_INFO := $(shell $(SVN) info $(BASE_DIR) 2> /dev/null)
-    ifeq ($(SVN_INFO),)
+    SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
+    SVN_INFO := $(shell $(SVN_INFO_CMD) 1>&2 2> /dev/null; echo $$?)
+    $(info "SVN INFO: $(SVN_INFO)")
+    ifneq ($(SVN_INFO),0)
         $(error "Cannot build the release files from a non-svn repo, aborting...")
     endif
-    BRANCH_NAME := $(shell echo $(SVN_INFO) | $(GREP) URL | $(SED) 's/^.*\/\([a-zA-Z0-9.\-]*\)$$/\1/')
+    BRANCH_NAME := $(shell $(SVN_INFO_CMD) | $(GREP) URL | $(SED) 's/^.*\/\([a-zA-Z0-9.\-]*\)$$/\1/')
 endif
 
 # Setup compilation and linker flags
