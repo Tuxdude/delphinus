@@ -44,10 +44,19 @@ class PsiSection
     public:
         enum
         {
-            TABLE_PAT = 0x00,
-            TABLE_CAT = 0x01,
-            TABLE_PMT = 0x02,
-            TABLE_TSDT = 0x03
+            TABLE_PAT                        = 0x00,
+            TABLE_CAT                        = 0x01,
+            TABLE_PMT                        = 0x02,
+            TABLE_TSDT                       = 0x03,
+            TABLE_SCENE_DESCRIPTION_SECTION  = 0x04,
+            TABLE_OBJECT_DESCRIPTION_SECTION = 0x05,
+            TABLE_ISO_13818_1_RESERVED_START = 0x06,
+            TABLE_ISO_13818_1_RESERVED_END   = 0x37,
+            TABLE_ISO_13818_6_START          = 0x38,
+            TABLE_ISO_13818_6_END            = 0x3F,
+            TABLE_USER_PRIVATE_START         = 0x40,
+            TABLE_USER_PRIVATE_END           = 0xFE,
+            TABLE_FORBIDDEN                  = 0xFF
         };
 
     private:
