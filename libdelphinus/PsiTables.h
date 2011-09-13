@@ -83,7 +83,7 @@ class PsiSection
         bool parse(uint8_t* data);
         uint8_t getTableId();
         uint16_t getLength();
-        uint16_t getIntermediateField();
+        uint16_t getTableIdExtension();
         uint8_t getVersionNumber();
         bool getCurrentNextIndicator();
         uint8_t getSectionNumber();
@@ -188,7 +188,7 @@ class PmtSection
 #define PSI_HARD_ZERO_SHIFT             6
 #define PSI_LENGTH_MASK                 0x0F
 #define PSI_LENGTH_SHIFT                8
-#define PSI_IF_SHIFT                    8
+#define PSI_TABLE_ID_EXTN_SHIFT         8
 #define PSI_VERSION_MASK                0x3E
 #define PSI_VERSION_SHIFT               1
 #define PSI_CURR_NEXT_MASK              0x01
@@ -198,7 +198,7 @@ class PmtSection
 #define PSI_GET_HARD_ZERO(x)            ((x->byte1 & PSI_HARD_ZERO_MASK) >> PSI_HARD_ZERO_SHIFT)
 #define PSI_GET_LENGTH(x)               (((x->byte1 & PSI_LENGTH_MASK) << PSI_LENGTH_SHIFT) |\
                                          (x->byte2))
-#define PSI_GET_IF(x)                   (((x->byte3) << PSI_IF_SHIFT) | (x->byte4))
+#define PSI_GET_TABLE_ID_EXTN(x)        (((x->byte3) << PSI_TABLE_ID_EXTN_SHIFT) | (x->byte4))
 #define PSI_GET_VERSION(x)              ((x->byte5 & PSI_VERSION_MASK) >> PSI_VERSION_SHIFT)
 #define PSI_GET_CURR_NEXT(x)            ((x->byte5) & PSI_CURR_NEXT_MASK)
 #define PSI_GET_SECTION_NUMBER(x)       (x->byte6)
@@ -216,9 +216,9 @@ inline uint16_t PsiSection::getLength()
     return PSI_GET_LENGTH(PSI_HEADER_START);
 }
 
-inline uint16_t PsiSection::getIntermediateField()
+inline uint16_t PsiSection::getTableIdExtension()
 {
-    return PSI_GET_IF(PSI_HEADER_START);
+    return PSI_GET_TABLE_ID_EXTN(PSI_HEADER_START);
 }
 
 inline uint8_t PsiSection::getVersionNumber()
