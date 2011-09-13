@@ -74,7 +74,7 @@ void TsFile::readFromOffset(uint64_t offset)
 void TsFile::validate()
 {
     readFromOffset(0);
-    TransportStreamPacket* tsPacket = new TransportStreamPacket();
+    TsPacket* tsPacket = new TsPacket();
     uint64_t bufferOffset = 0;
     packetSize = 0;
     isTsFile = false;
@@ -117,7 +117,7 @@ TsFile::TsFile()
 {
     buffer = new uint8_t[BUFFER_SIZE];
     assert(buffer != NULL);
-    viewPacket = new TransportStreamPacket();
+    viewPacket = new TsPacket();
     assert(viewPacket != NULL);
 }
 
@@ -169,7 +169,7 @@ bool TsFile::isValid()
     return isTsFile; 
 }
 
-TransportStreamPacket* TsFile::viewPacketByNumber(uint64_t packetNumber)
+TsPacket* TsFile::viewPacketByNumber(uint64_t packetNumber)
 {
     uint64_t packetOffset = packetNumber * packetSize;
     uint64_t bufferOffset = packetOffset % BUFFER_SIZE;
@@ -190,7 +190,7 @@ TransportStreamPacket* TsFile::viewPacketByNumber(uint64_t packetNumber)
     return viewPacket;
 }
 
-TransportStreamPacket* TsFile::viewNextPacket()
+TsPacket* TsFile::viewNextPacket()
 {
     uint64_t packetOffset = (uint64_t) - 1;
     if (lastPacketOffset == (uint64_t) - 1)
@@ -216,7 +216,7 @@ TransportStreamPacket* TsFile::viewNextPacket()
     return viewPacket;
 }
 
-TransportStreamPacket* TsFile::viewPreviousPacket()
+TsPacket* TsFile::viewPreviousPacket()
 {
     uint64_t packetOffset = (uint64_t) - 1;
     if (lastPacketOffset == (uint64_t) - 1)

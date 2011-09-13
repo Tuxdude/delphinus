@@ -24,13 +24,11 @@
 #ifndef DELPHINUS_TSFILE_H
 #define DELPHINUS_TSFILE_H
 #include <cstdio>
-#include "TransportStream.h"
+#include "Ts.h"
 
 // view lets you view the packet in buffer, and the returned pointer
 // might not be valid after a next call to viewPacket
-// Use copyPacket of TransportStreamPacket to make the packet permanent
-// get on the other hand allocates memory explicitly for the packet's data
-// while returning, so it can be kept until the app frees up the memory.
+// Use copy() method of TsPacket to make the packet permanent in memory
 
 class TsFile
 {
@@ -43,7 +41,7 @@ class TsFile
         };
         uint8_t* buffer;
         FILE* fileHandle;
-        TransportStreamPacket* viewPacket;
+        TsPacket* viewPacket;
 
         uint64_t fileSize;
         uint64_t validBufferSize;
@@ -70,11 +68,11 @@ class TsFile
         // Caller should not free up the memory returned, TsFile takes
         // care of freeing up the memory
         // The packet can be persisted in the memory by calling the copy()
-        // method of TransportStreamPacket
-        TransportStreamPacket* viewPacketByNumber(uint64_t packetNumber);
-//        TransportStreamPacket* viewPacketByPid(uint16_t pid);
-        TransportStreamPacket* viewNextPacket();
-        TransportStreamPacket* viewPreviousPacket();
+        // method of TsPacket
+        TsPacket* viewPacketByNumber(uint64_t packetNumber);
+//        TsPacket* viewPacketByPid(uint16_t pid);
+        TsPacket* viewNextPacket();
+        TsPacket* viewPreviousPacket();
 
 //        ProgramInfo* getProgramInfo();
 //        NetworkInfo* getNetworkInfo();

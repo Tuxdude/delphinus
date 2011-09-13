@@ -21,7 +21,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-sources := TransportStream.cpp Pes.cpp TsFile.cpp
+sources := Ts.cpp Pes.cpp TsFile.cpp
 BASE_DIR := ..
 BUILD_DIR := ./build
 
@@ -30,7 +30,7 @@ objs := $(addprefix $(BUILD_DIR)/,$(sources:.cpp=.o))
 SOURCES := $(sources)
 TARGET := $(BUILD_DIR)/libdelphinus.so
 EXPORT_HEADERS_PREFIX_DIR := libdelphinus
-EXPORT_HEADERS := TransportStream.h TsFile.h Pes.h
+EXPORT_HEADERS := Ts.h TsFile.h Pes.h
 EXPORT_LIBS := $(TARGET)
 
 include $(BASE_DIR)/tools/makesystem.mk

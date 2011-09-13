@@ -1,5 +1,5 @@
 /*
- *  TransportStream.cpp - declaration of types related to transport stream header
+ *  Ts.cpp - declaration of types related to transport stream header
  *  and the fields within as specified in the ISO 13818-1 document
  *
  *  This file is part of delphinus - a stream analyzer for various multimedia
@@ -22,7 +22,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TransportStream.h"
+#include "Ts.h"
 #include <cstdio>
 
 //#define DEBUG
@@ -35,7 +35,7 @@
 
 #define ERR(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
 
-TransportStreamPacket::TransportStreamPacket()
+TsPacket::TsPacket()
     :   start(NULL),
         startOffset(0),
         packetSize(0),
@@ -47,7 +47,7 @@ TransportStreamPacket::TransportStreamPacket()
 
 }
 
-TransportStreamPacket::~TransportStreamPacket()
+TsPacket::~TsPacket()
 {
     if (isMemoryAllocated)
     {
@@ -55,7 +55,7 @@ TransportStreamPacket::~TransportStreamPacket()
     }
 }
 
-bool TransportStreamPacket::parse(uint8_t* data, uint64_t size)
+bool TsPacket::parse(uint8_t* data, uint64_t size)
 {
     if (isMemoryAllocated && start)
     {
@@ -128,11 +128,11 @@ bool TransportStreamPacket::parse(uint8_t* data, uint64_t size)
     return isValid;
 }
 
-TransportStreamPacket* TransportStreamPacket::copy()
+TsPacket* TsPacket::copy()
 {
     if (start && isValid)
     {
-        TransportStreamPacket* tsPacket = new TransportStreamPacket();
+        TsPacket* tsPacket = new TsPacket();
         uint8_t* copiedData = new uint8_t[packetSize];
         tsPacket->parse(copiedData, packetSize);
         tsPacket->isMemoryAllocated = true;

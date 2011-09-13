@@ -1,5 +1,5 @@
 /*
- *  TransportStream.h - declaration of types related to transport stream header
+ *  Ts.h - declaration of types related to transport stream header
  *  and the fields within as specified in the ISO 13818-1 document
  *
  *  This file is part of delphinus - a stream analyzer for various multimedia
@@ -26,7 +26,7 @@
 #define DELPHINUS_TRANSPORT_STREAM_H
 #include <inttypes.h>
 
-class TransportStreamPacket
+class TsPacket
 {
     public:
         enum
@@ -40,7 +40,7 @@ class TransportStreamPacket
         };
 
     private:
-        struct TransportStreamHeader
+        struct TsHeader
         {
             uint8_t byte0;
             uint8_t byte1;
@@ -56,13 +56,13 @@ class TransportStreamPacket
         bool isValid;
 
     public:
-        TransportStreamPacket();
-        ~TransportStreamPacket();
+        TsPacket();
+        ~TsPacket();
 
         bool parse(uint8_t* data, uint64_t size);
         uint8_t* getStart();
         uint8_t getPacketSize();
-        TransportStreamPacket* copy();
+        TsPacket* copy();
 
         uint8_t getSyncByte();
         bool getTransportErrorIndicator();
@@ -153,74 +153,74 @@ class AdaptationFieldExtension
 #define TS_GET_AFC(x)                   ((x->byte3 & TS_AFC_MASK) >> TS_AFC_SHIFT)
 #define TS_GET_CC(x)                    (x->byte3 & TS_CC_MASK)
 
-#define TS_HEADER_START ((TransportStreamHeader*)(start + startOffset))
+#define TS_HEADER_START ((TsHeader*)(start + startOffset))
 
-inline uint8_t* TransportStreamPacket::getStart()
+inline uint8_t* TsPacket::getStart()
 {
     return start;
 }
 
-inline uint8_t TransportStreamPacket::getPacketSize()
+inline uint8_t TsPacket::getPacketSize()
 {
     return packetSize;
 }
 
-inline uint8_t TransportStreamPacket::getSyncByte()
+inline uint8_t TsPacket::getSyncByte()
 {
     return TS_GET_SYNC_BYTE(TS_HEADER_START);
 }
 
-inline bool TransportStreamPacket::getTransportErrorIndicator()
+inline bool TsPacket::getTransportErrorIndicator()
 {
     return TS_GET_TEI(TS_HEADER_START);
 }
 
-inline bool TransportStreamPacket::getPayloadUnitStartIndicator()
+inline bool TsPacket::getPayloadUnitStartIndicator()
 {
     return TS_GET_PUSI(TS_HEADER_START);
 }
 
-inline bool TransportStreamPacket::getTransportPriority()
+inline bool TsPacket::getTransportPriority()
 {
     return TS_GET_TP(TS_HEADER_START);
 }
 
-inline uint16_t TransportStreamPacket::getPid()
+inline uint16_t TsPacket::getPid()
 {
     return TS_GET_PID(TS_HEADER_START);
 }
 
-inline uint8_t TransportStreamPacket::getTransportScramblingControl()
+inline uint8_t TsPacket::getTransportScramblingControl()
 {
     return TS_GET_TSC(TS_HEADER_START);
 }
 
-inline uint8_t TransportStreamPacket::getAdaptationFieldControl()
+inline uint8_t TsPacket::getAdaptationFieldControl()
 {
     return TS_GET_AFC(TS_HEADER_START);
 }
 
-inline bool TransportStreamPacket::hasAdaptationField()
+inline bool TsPacket::hasAdaptationField()
 {
     return getAdaptationFieldControl() & 0x02;
 }
 
-inline bool TransportStreamPacket::hasPayload()
+inline bool TsPacket::hasPayload()
 {
     return getAdaptationFieldControl() & 0x01;
 }
 
-inline uint8_t TransportStreamPacket::getContinuityCounter()
+inline uint8_t TsPacket::getContinuityCounter()
 {
     return TS_GET_CC(TS_HEADER_START);
 }
 
-inline uint8_t* TransportStreamPacket::getAdaptationField()
+inline uint8_t* TsPacket::getAdaptationField()
 {
     return (start + adaptationFieldOffset);
 }
 
-inline uint8_t* TransportStreamPacket::getPayload()
+inline uint8_t* TsPacket::getPayload()
 {
     return (start + payloadOffset);
 }

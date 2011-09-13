@@ -65,14 +65,14 @@ int main(int argc, char* argv[])
     MSG("-----------------------------------------------------------");
 
     uint64_t packetCount = 0;
-    TransportStreamPacket* tsPacket = NULL;
+    TsPacket* tsPacket = NULL;
     tsPacket = tsFile.viewPacketByNumber(0);
     PesPacket pesPacket;
     while (packetCount < 500)
     {
         uint16_t pid = tsPacket->getPid();
 //        MSG("PID: 0x%03x", pid);
-        if (pid != TransportStreamPacket::PID_NULL)
+        if (pid != TsPacket::PID_NULL)
         {
             MSG("Packet: %lu", packetCount);
             MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
