@@ -22,8 +22,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELPHINUS_TRANSPORT_STREAM_H
-#define DELPHINUS_TRANSPORT_STREAM_H
+#ifndef DELPHINUS_TS_H
+#define DELPHINUS_TS_H
 #include <inttypes.h>
 
 class TsPacket
