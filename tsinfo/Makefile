@@ -24,7 +24,7 @@
 BASE_DIR := ..
 BUILD_DIR := ./build
 
-sources := main.cpp
+sources := tsinfo.cpp
 objs := $(addprefix $(BUILD_DIR)/,$(sources:.cpp=.o))
 
 SOURCES := $(sources)

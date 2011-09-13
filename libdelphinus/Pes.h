@@ -54,194 +54,69 @@ class PesPacket
             STREAM_ID_PROGRAM_STREAM_DIR = 0xFF
         };
     private:
-
-    public:
-        void clear();
-        void appendPartialPes(uint8_t* data);
-        void parse(uint8_t* data);
-
-        bool isValid();
-        uint32_t getLength();
-        uint32_t getStartCodePrefix();
-        uint8_t getStreamId();
-
-};
-
-class TransportStreamPacket
-{
-    public:
-        enum { PACKET_SIZE = 188 };
-
-    private:
-        struct TransportStreamHeader
+        struct PesHeader
         {
             uint8_t byte0;
             uint8_t byte1;
             uint8_t byte2;
             uint8_t byte3;
+            uint8_t byte4;
+            uint8_t byte5;
         };
+        bool isPes;
         uint8_t* start;
 
     public:
-        bool parse(uint8_t* data);
-        uint8_t* getStart();
+        PesPacket();
+        ~PesPacket();
+
+        void clear();
+        // Always call parse to start the PES parsing
+        // It creates new memory for the parsed data and copies
+        // it if it seems to be PES
+        void parse(uint8_t* data);
+        // append the pes data to an already initialized Pes object
+        // which contains the payload preceding the current one
+        void appendPartialPes(uint8_t* data);
+
         bool isValid();
+        uint16_t getLength();
+        uint32_t getStartCodePrefix();
+        uint8_t getStreamId();
 
-        uint8_t getSyncByte();
-        bool getTransportErrorIndicator();
-        bool getPayloadUnitStartIndicator();
-        bool getTransportPriority();
-        uint16_t getPid();
-        uint8_t getTransportScramblingControl();
-        uint8_t getAdaptationFieldControl();
-        bool hasAdaptationField();
-        bool hasData();
-        uint8_t getContinuityCounter();
-        uint8_t* getAdaptationField();
-        uint8_t* getPayload();
 };
 
-class AdaptationField
+#define PES_START_CODE_SHIFT_0          16
+#define PES_START_CODE_SHIFT_1          8
+#define PES_LENGTH_SHIFT                8              
+
+#define PES_GET_START_CODE(x)           ((x->byte0 << PES_START_CODE_SHIFT_0) |\
+                                         (x->byte1 << PES_START_CODE_SHIFT_1) |\
+                                         (x->byte2))
+#define PES_GET_STREAM_ID(x)            (x->byte3)
+#define PES_GET_LENGTH(x)               ((x->byte4 << PES_LENGTH_SHIFT) |\
+                                         (x->byte5))
+
+#define PES_HEADER_START ((PesHeader*)(start))
+
+inline bool PesPacket::isValid()
 {
-    private:
-        uint8_t* start;
-        uint8_t length;
-        uint8_t* pcrStart;
-        uint8_t* opcrStart;
-        uint8_t* spliceCountdownStart;
-        uint8_t* privateDataStart;
-        uint8_t* adaptationFieldExtensionStart;
-
-    public:
-        void parse(uint8_t* data);
-        uint8_t* getStart();
-        uint8_t getLength();
-        bool getDiscontinuityIndicator();
-        bool getRandomAccessIndicator();
-        bool getEsPriorityIndicator();
-        bool hasPcr();
-        void getPcr(uint64_t& pcrBase, uint8_t pcrExtn);
-        bool hasOpcr();
-        void getOpcr(uint64_t& opcrBase, uint8_t opcrExtn);
-        bool hasSpliceCountdown();
-        int8_t getSpliceCountdown();
-        bool hasTransportPrivateData();
-        void getPrivateData(uint8_t*& privateDataStart, uint8_t& length);
-        uint8_t* getAdaptationFieldExtension();
-};
-
-class AdaptationFieldExtension
-{
-    private:
-        uint8_t* start;
-        uint8_t length;
-        uint8_t* ltwStart;
-        uint8_t* piecewiseRateStart;
-        uint8_t* seamlessSpliceStart;
-
-    public:
-        void parse(uint8_t* data);
-        uint8_t* getStart();
-        uint8_t getLength();
-        bool hasLtw();
-        void getLtw(bool& isValid, uint16_t& offset);
-        bool hasPiecewiseRate();
-        uint32_t getPiecewiseRate();
-        bool hasSeamlessSplice();
-        void getSeamlessSpliceInfo(uint8_t& spliceType, uint64_t& dtsNextAu);
-};
-
-
-
-#define TS_TEI_MASK                     0x80
-#define TS_TEI_SHIFT                    7
-#define TS_PUSI_MASK                    0x40
-#define TS_PUSI_SHIFT                   6
-#define TS_TP_MASK                      0x20
-#define TS_TP_SHIFT                     5
-#define TS_PID_HIGH_MASK                0x01F
-#define TS_PID_HIGH_SHIFT               8
-#define TS_TSC_MASK                     0xC0
-#define TS_TSC_SHIFT                    6
-#define TS_AFC_MASK                     0x30
-#define TS_AFC_SHIFT                    4
-#define TS_CC_MASK                      0x0F
-
-#define TS_GET_SYNC_BYTE(x)             (x->byte0)
-#define TS_GET_TEI(x)                   ((x->byte1 & TS_TEI_MASK) >> TS_TEI_SHIFT)
-#define TS_GET_PUSI(x)                  ((x->byte1 & TS_PUSI_MASK) >> TS_PUSI_SHIFT)
-#define TS_GET_TP(x)                    ((x->byte1 & TS_TP_MASK) >> TS_TP_SHIFT)
-#define TS_GET_PID(x)                   (((x->byte1 & TS_PID_HIGH_MASK) << TS_PID_HIGH_SHIFT) | x->byte2)
-#define TS_GET_TSC(x)                   ((x->byte3 & TS_TSC_MASK) >> TS_TSC_SHIFT)
-#define TS_GET_AFC(x)                   ((x->byte3 & TS_AFC_MASK) >> TS_AFC_SHIFT)
-#define TS_GET_CC(x)                    (x->byte3 & TS_CC_MASK)
-
-#define TS_HEADER_START ((TransportStreamHeader*)start)
-
-inline bool TransportStreamPacket::parse(uint8_t* data)
-{
-    start = data;
-    return isValid();
+    return isPes;
 }
 
-inline uint8_t* TransportStreamPacket::getStart()
+inline uint16_t PesPacket::getLength()
 {
-    return start;
+    return PES_GET_LENGTH(PES_HEADER_START);
 }
 
-inline bool TransportStreamPacket::isValid()
+inline uint32_t PesPacket::getStartCodePrefix()
 {
-    return getSyncByte() == 0x47;
+    return PES_GET_START_CODE(PES_HEADER_START);
 }
 
-inline uint8_t TransportStreamPacket::getSyncByte()
+inline uint8_t PesPacket::getStreamId()
 {
-    return TS_GET_SYNC_BYTE(TS_HEADER_START);
-}
-
-inline bool TransportStreamPacket::getTransportErrorIndicator()
-{
-    return TS_GET_TEI(TS_HEADER_START);
-}
-
-inline bool TransportStreamPacket::getPayloadUnitStartIndicator()
-{
-    return TS_GET_PUSI(TS_HEADER_START);
-}
-
-inline bool TransportStreamPacket::getTransportPriority()
-{
-    return TS_GET_TP(TS_HEADER_START);
-}
-
-inline uint16_t TransportStreamPacket::getPid()
-{
-    return TS_GET_PID(TS_HEADER_START);
-}
-
-inline uint8_t TransportStreamPacket::getTransportScramblingControl()
-{
-    return TS_GET_TSC(TS_HEADER_START);
-}
-
-inline uint8_t TransportStreamPacket::getAdaptationFieldControl()
-{
-    return TS_GET_AFC(TS_HEADER_START);
-}
-
-inline bool TransportStreamPacket::hasAdaptationField()
-{
-    return getAdaptationFieldControl() & 0x02;
-}
-
-inline bool TransportStreamPacket::hasData()
-{
-    return getAdaptationFieldControl() & 0x01;
-}
-
-inline uint8_t TransportStreamPacket::getContinuityCounter()
-{
-    return TS_GET_CC(TS_HEADER_START);
+    return PES_GET_STREAM_ID(PES_HEADER_START);
 }
 
 #endif

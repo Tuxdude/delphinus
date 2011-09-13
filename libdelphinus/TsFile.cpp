@@ -24,22 +24,46 @@
 #include "TsFile.h"
 #include <cassert>
 
+//#define DEBUG
+
+#ifdef DEBUG
+#define MSG(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
+#else
+#define MSG(x, ...); 
+#endif
+
+#define ERR(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
+
 uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size)
 {
     uint64_t readSize = fread(buffer, size, 1, fileHandle);
-    if (readSize != size && !feof(fileHandle))
+    MSG("Only read: %lu", readSize);
+    if (readSize == 1)
     {
-        readSize = fread(buffer, 1, size, fileHandle);
+        return size;
     }
-    return readSize;
+    else if (!feof(fileHandle))
+    {
+        MSG("Doing partial file read");
+        readSize = fread(buffer, 1, size, fileHandle);
+        MSG("Now read: %lu", readSize);
+        return readSize;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void TsFile::readFromOffset(uint64_t offset)
 {
+    MSG("Gonna read from offset: %lu", offset);
     if (!fseeko(fileHandle, offset, SEEK_SET))
     {
         validBufferSize = readFile(buffer, fileHandle, BUFFER_SIZE);
         currentFileOffset = offset;
+        //FIXME: Handle the EOF case
+        assert(validBufferSize > 0);
     }
     else
     {
@@ -160,6 +184,7 @@ TransportStreamPacket* TsFile::viewPacketByNumber(uint64_t packetNumber)
         readFromOffset(packetOffset - bufferOffset);
     }
 
+    MSG("Returning packet %lu from buffer offset: %lu", packetNumber, bufferOffset);
     viewPacket->parse(buffer + bufferOffset, validBufferSize - bufferOffset);
     lastPacketOffset = packetOffset;
     return viewPacket;
@@ -185,6 +210,7 @@ TransportStreamPacket* TsFile::viewNextPacket()
         // We do not have this packet in the buffer yet
         readFromOffset(packetOffset);
     }
+    MSG("Returning packet from buffer offset: %lu", bufferOffset);
     viewPacket->parse(buffer + bufferOffset, validBufferSize - bufferOffset);
     lastPacketOffset = packetOffset;
     return viewPacket;

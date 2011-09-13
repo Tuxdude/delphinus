@@ -31,8 +31,12 @@ class TransportStreamPacket
     public:
         enum
         {
-            PACKET_SIZE_TS = 188,
-            PACKET_SIZE_TTS = 192
+            PACKET_SIZE_TS  = 188,
+            PACKET_SIZE_TTS = 192,
+            PID_PAT         = 0,
+            PID_CAT         = 1,
+            PID_TSDT        = 2,
+            PID_NULL        = 0x1fff
         };
 
     private:
@@ -46,6 +50,8 @@ class TransportStreamPacket
         uint8_t* start;
         uint8_t startOffset;
         uint8_t packetSize;
+        uint8_t adaptationFieldOffset;
+        uint16_t payloadOffset;
         bool isMemoryAllocated;
         bool isValid;
 
@@ -66,7 +72,7 @@ class TransportStreamPacket
         uint8_t getTransportScramblingControl();
         uint8_t getAdaptationFieldControl();
         bool hasAdaptationField();
-        bool hasData();
+        bool hasPayload();
         uint8_t getContinuityCounter();
         uint8_t* getAdaptationField();
         uint8_t* getPayload();
@@ -199,7 +205,7 @@ inline bool TransportStreamPacket::hasAdaptationField()
     return getAdaptationFieldControl() & 0x02;
 }
 
-inline bool TransportStreamPacket::hasData()
+inline bool TransportStreamPacket::hasPayload()
 {
     return getAdaptationFieldControl() & 0x01;
 }
@@ -209,4 +215,13 @@ inline uint8_t TransportStreamPacket::getContinuityCounter()
     return TS_GET_CC(TS_HEADER_START);
 }
 
+inline uint8_t* TransportStreamPacket::getAdaptationField()
+{
+    return (start + adaptationFieldOffset);
+}
+
+inline uint8_t* TransportStreamPacket::getPayload()
+{
+    return (start + payloadOffset);
+}
 #endif

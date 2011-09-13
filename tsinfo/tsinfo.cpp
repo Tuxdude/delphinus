@@ -22,8 +22,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
 #include "libdelphinus/TsFile.h"
+#include "libdelphinus/Pes.h"
 
 #define DEBUG
 
@@ -67,10 +67,12 @@ int main(int argc, char* argv[])
     uint64_t packetCount = 0;
     TransportStreamPacket* tsPacket = NULL;
     tsPacket = tsFile.viewPacketByNumber(0);
-    while (packetCount <= 100)
+    PesPacket pesPacket;
+    while (packetCount < 500)
     {
         uint16_t pid = tsPacket->getPid();
-        if (pid != 0x1FFF)
+//        MSG("PID: 0x%03x", pid);
+        if (pid != TransportStreamPacket::PID_NULL)
         {
             MSG("Packet: %lu", packetCount);
             MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
@@ -81,6 +83,14 @@ int main(int argc, char* argv[])
             MSG("Scrambling Control: 0x%01x", tsPacket->getTransportScramblingControl());
             MSG("Adaptation Field Control: 0x%01x", tsPacket->getAdaptationFieldControl());
             MSG("Continuity Counter: 0x%01x", tsPacket->getContinuityCounter());
+            if (tsPacket->hasPayload())
+            {
+                pesPacket.parse(tsPacket->getPayload());
+                MSG("hasAdaptation: %d PES Start Code: %08x",
+                    tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());
+                MSG("streamId: %02x", pesPacket.getStreamId());
+                MSG("PES packet length: %02x", pesPacket.getLength());
+            }
             MSG("-----------------------------------------------------------");
         }
         tsPacket = tsFile.viewNextPacket();

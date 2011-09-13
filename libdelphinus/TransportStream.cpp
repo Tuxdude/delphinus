@@ -23,10 +23,28 @@
  */
 
 #include "TransportStream.h"
-#include <cstddef>
+#include <cstdio>
+
+//#define DEBUG
+
+#ifdef DEBUG
+#define MSG(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
+#else
+#define MSG(x, ...); 
+#endif
+
+#define ERR(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
 
 TransportStreamPacket::TransportStreamPacket()
+    :   start(NULL),
+        startOffset(0),
+        packetSize(0),
+        adaptationFieldOffset(0),
+        payloadOffset(0),
+        isMemoryAllocated(false),
+        isValid(false)
 {
+
 }
 
 TransportStreamPacket::~TransportStreamPacket()
@@ -47,6 +65,8 @@ bool TransportStreamPacket::parse(uint8_t* data, uint64_t size)
     start = data;
     startOffset = 0;
     packetSize = 0;
+    adaptationFieldOffset = 0;
+    payloadOffset = 0;
     isValid = false;
 
     if (size < PACKET_SIZE_TS)
@@ -75,6 +95,35 @@ bool TransportStreamPacket::parse(uint8_t* data, uint64_t size)
                 isValid = true;
             }
         }
+    }
+
+    if (isValid)
+    {
+        uint8_t adaptationFieldLength = 0;
+        if (hasAdaptationField())
+        {
+            adaptationFieldOffset = startOffset + 4;
+            adaptationFieldLength = *(start + adaptationFieldOffset);
+        }
+        else
+        {
+            adaptationFieldOffset = 0;
+            adaptationFieldLength = 0;
+        }
+        if (hasPayload())
+        {
+            if (adaptationFieldLength == 0)
+            {
+                payloadOffset = startOffset + 4;
+            }
+            else
+            {
+                payloadOffset = adaptationFieldOffset + adaptationFieldLength + 1;
+            }
+        }
+
+        MSG("First 4 bytes of the TS: %02x %02x %02x %02x",
+            start[0], start[1], start[2], start[3]);
     }
     return isValid;
 }
