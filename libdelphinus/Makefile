@@ -21,7 +21,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-sources := Ts.cpp Pes.cpp TsFile.cpp
+sources := Ts.cpp Pes.cpp PsiTables.cpp TsFile.cpp
 BASE_DIR := ..
 BUILD_DIR := ./build
 

@@ -33,6 +33,7 @@ endif
 
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
+SHELL := /bin/bash -e
 
 # Handle Verbose mode
 ifeq ($(VERBOSE),)
@@ -143,10 +144,16 @@ ifneq ($(PRE_REQS),)
 all: .prereqs
 
 .prereqs:
-	$(silent)for dir in $(PRE_REQS); do $(MAKE) -C $(BASE_DIR)/$${dir}; done
+	$(silent)for dir in $(PRE_REQS);\
+	    do $(MAKE) -C $(BASE_DIR)/$${dir};\
+	    if [ $$? -ne 0 ]; then exit 1; fi\
+	    done
 
 distclean:
-	$(silent)for dir in $(PRE_REQS); do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean; done
+	$(silent)for dir in $(PRE_REQS);\
+	    do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean;\
+            if [ $$? -ne 0 ]; then exit 1; fi\
+	    done
 	$(MAKE) local_clean
 else
 distclean:
