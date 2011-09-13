@@ -51,6 +51,7 @@ endef
 SHELL = /bin/sh
 
 # Setting up exports dir
+EXPORT_TRIGGER := .export
 EXPORTS_DIR := $(BASE_DIR)/dist
 EXPORT_HEADERS_BASE_DIR := $(EXPORTS_DIR)/include
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
@@ -163,10 +164,13 @@ endif
 # TARGET comes after CLEANUP_TRIGGER and .prereqs
 ifneq ($(TARGET),)
 ifneq ($(EXPORT_DIST),)
-all: .export_dist $(TARGET)
+all: $(EXPORT_TRIGGER) $(TARGET)
 
-.export_dist: $(TARGET)
+$(EXPORT_TRIGGER): $(TARGET)
 	$(EXPORT_DIST)
+	$(silent)$(TOUCH) $@
+
+CLEANUP_FILES += $(EXPORT_TRIGGER)
 else
 all: $(TARGET)
 endif
@@ -210,7 +214,7 @@ $(CLEANUP_TRIGGER): $(BASE_MAKEFILE)
 	$(silent)if [ "$(BASE_DIR)" != "." ]; then $(MKDIR) $(BUILD_DIR);\
 	    $(MKDIR) $(DEP_DIR); fi
 	$(silent)$(MKDIR) $(EXPORT_HEADERS_DIR)
-	$(silent)$(TOUCH) $(CLEANUP_TRIGGER)
+	$(silent)$(TOUCH) $@
 
 local_all: $(TARGET)
 
@@ -241,8 +245,9 @@ help:
 	@echo -e "make local_all    : Build the targets without checking for dependencies"
 	@echo -e "make local_clean  : Clean the targets but not the dependencies"
 	@echo -e "make distclean    : Clean the targets and the dependencies"
+	@echo -e "make release      : Buidl the release tarballs (requires the codebase to be from an SVN repo)"
 	@echo -e "make help         : Display this help message"
 
 
-.PHONY: all local_all local_clean distclean help .prereqs .export_dist release
+.PHONY: all local_all local_clean distclean help .prereqs release
 

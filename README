@@ -14,6 +14,9 @@ License. For more information, see the file COPYING.
 To build the Delphinus library and the tools run:
 make
 
+The built headers, libraries, and binaries are all located under the directory
+dist.
+
 For more detailed configuration options refer to the file INSTALL in this
 directory.
 

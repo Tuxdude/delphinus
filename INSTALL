@@ -4,4 +4,13 @@ Configuration and Installation options
 To build and install using the standard GNU C++ compiler toolchain run:
 make
 
+The directory dist contains all the built libraries and binaries along with
+the exported header files.
+
+To see a list of commonly supported targets run:
+make help
+
+To build the release tarballs from the svn repository run:
+make release
+
 Other configuration options will be updated here soon.
