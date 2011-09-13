@@ -75,8 +75,7 @@ RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
 DELPHINUS := delphinus
 ifeq ($(MAKECMDGOALS),release)
     SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
-    SVN_INFO := $(shell $(SVN_INFO_CMD) 1>&2 2> /dev/null; echo $$?)
-    $(info "SVN INFO: $(SVN_INFO)")
+    SVN_INFO := $(shell $(SVN_INFO_CMD) 1>/dev/null 2>/dev/null; echo $$?)
     ifneq ($(SVN_INFO),0)
         $(error "Cannot build the release files from a non-svn repo, aborting...")
     endif
@@ -155,7 +154,12 @@ distclean:
 	    do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean;\
             if [ $$? -ne 0 ]; then exit 1; fi\
 	    done
-	$(MAKE) local_clean
+	$(silent)$(MAKE) local_clean
+	$(silent)$(RM_RECURSIVE) $(EXPORT_RELEASES_DIR)
+	$(silent)$(RMDIR) $(EXPORT_HEADERS_DIR)
+	$(silent)$(RMDIR) $(EXPORT_LIBS_DIR)
+	$(silent)$(RMDIR) $(EXPORT_BINS_DIR)
+	$(silent)$(RMDIR) $(EXPORTS_DIR)
 else
 distclean:
 	$(MAKE) local_clean
