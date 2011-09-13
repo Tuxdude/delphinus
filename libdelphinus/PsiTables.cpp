@@ -36,7 +36,9 @@ PsiSection::~PsiSection()
 
 inline bool PsiSection::parse(uint8_t* data)
 {
-    start = data;
+    // The first byte to parse should is the pointer field
+    // giving the offset to where the section data starts
+    start = data + *(data);
     return (PSI_GET_SSI(PSI_HEADER_START) == 1 &&
             PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0);
 }

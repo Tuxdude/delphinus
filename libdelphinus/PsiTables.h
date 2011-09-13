@@ -25,6 +25,7 @@
 #ifndef DELPHINUS_PSI_TABLES_H
 #define DELPHINUS_PSI_TABLES_H
 #include <inttypes.h>
+#include <list>
 
 // Table ID                     8
 // section syntax indicator     1
@@ -88,6 +89,98 @@ class PsiSection
         uint8_t getSectionNumber();
         uint8_t getLastSectionNumber();
         uint8_t* getData();
+};
+
+class PatSection
+{
+    public:
+        struct ProgramInfo
+        {
+            uint16_t programNumber;
+            uint16_t pmtPid;
+        };
+        typedef std::list<ProgramInfo> ProgramList;
+    private:
+        uint16_t transportStreamId;
+        uint16_t networkPid;
+        uint8_t* start;
+
+    public:
+        PatSection();
+        ~PatSection();
+
+        void parse(uint8_t* data);
+        uint16_t getTransportStreamId();
+        void getPrograms(ProgramList);
+        uint16_t getNetworkPid();
+};
+
+class CatSection
+{
+    private:
+        uint8_t* start;
+
+    public:
+        CatSection();
+        ~CatSection();
+
+        void parse(uint8_t* data);
+        uint8_t* getDescriptor();
+};
+
+// FIXME: All descriptors should be returned in a ptr,length fashion
+
+class PmtSection
+{
+    public:
+        enum
+        {
+            STREAM_TYPE_RESERVED                       = 0x00,
+            STREAM_TYPE_11172_VIDEO                    = 0x01,
+            STREAM_TYPE_13818_2_VIDEO                  = 0x02,
+            STREAM_TYPE_11172_AUDIO                    = 0x03,
+            STREAM_TYPE_13818_3_AUDIO                  = 0x04,
+            STREAM_TYPE_13818_1_PRIVATE_SECTIONS       = 0x05,
+            STREAM_TYPE_13818_1_PES_PRIVATE_DATA       = 0x06,
+            STREAM_TYPE_13522_MHEG                     = 0x07,
+            STREAM_TYPE_13818_1_DSMCC                  = 0x08,
+            STREAM_TYPE_H222_1                         = 0x09,
+            STREAM_TYPE_13818_6_TYPE_A                 = 0x0A,
+            STREAM_TYPE_13818_6_TYPE_B                 = 0x0B,
+            STREAM_TYPE_13818_6_TYPE_C                 = 0x0C,
+            STREAM_TYPE_13818_6_TYPE_D                 = 0x0D,
+            STREAM_TYPE_13818_1_AUX                    = 0x0E,
+            STREAM_TYPE_13818_7_AAC_ADTS               = 0x0F,
+            STREAM_TYPE_14496_2_VISUAL                 = 0x10,
+            STREAM_TYPE_14496_3_AAC_LATM               = 0x11,
+            STREAM_TYPE_14496_1_FLEXMUX_PES            = 0x12,
+            STREAM_TYPE_14496_1_FLEXMUX_SECTIONS       = 0x13,
+            STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL = 0x14,
+            STREAM_TYPE_13818_1_RESERVED_START         = 0x15,
+            STREAM_TYPE_13818_1_RESERVED_END           = 0x7F,
+            STREAM_TYPE_USER_PRIVATE_START             = 0x80,
+            STREAM_TYPE_USER_PRIVATE_END               = 0xFF
+        };
+        struct StreamInfo
+        {
+            uint8_t streamType;
+            uint16_t pid;
+            uint8_t* descriptor;
+        };
+        typedef std::list<StreamInfo> StreamList;
+
+    private:
+        uint8_t* start;
+
+    public:
+        PmtSection();
+        ~PmtSection();
+
+        void parse(uint8_t* data);
+        uint16_t getProgramNumber();
+        uint16_t getPcrPid();
+        uint8_t* getProgramInfoDescriptor();
+        void getStreamList(StreamList& streamList);
 };
 
 #define PSI_SSI_SHIFT                   7
