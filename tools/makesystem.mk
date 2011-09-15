@@ -86,7 +86,7 @@ endif
 OPTIMIZATION_FLAGS := -O3
 WARN_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strings \
     -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith -Wmissing-declarations \
-    -Wmissing-include-dirs -Wshadow
+    -Wmissing-include-dirs -Wshadow -Wwrite-strings
 WARN_C_FLAGS := -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
 COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -pipe -fPIC
 INCPATH := -I. -I$(EXPORT_HEADERS_BASE_DIR)
