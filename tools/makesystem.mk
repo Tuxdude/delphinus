@@ -84,7 +84,7 @@ endif
 
 # Setup compilation and linker flags
 OPTIMIZATION_FLAGS := -O3
-COMMON_FLAGS := -Wall -W -Wno-long-long -D_REENTRANT -pipe -fPIC
+COMMON_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -D_REENTRANT -pipe -fPIC
 INCPATH := -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
 CFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
