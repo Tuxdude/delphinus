@@ -84,10 +84,14 @@ endif
 
 # Setup compilation and linker flags
 OPTIMIZATION_FLAGS := -O3
-COMMON_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -D_REENTRANT -pipe -fPIC
+WARN_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strings \
+    -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith -Wmissing-declarations \
+    -Wmissing-include-dirs -Wshadow
+WARN_C_FLAGS := -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
+COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -pipe -fPIC
 INCPATH := -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
-CFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
+CFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
 CFLAGS += -std=gnu99
 CXXFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
 CPPFLAGS := $(INCPATH)

@@ -35,6 +35,8 @@
 
 #define ERR(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
 
+void printUsage(char* programName);
+
 void printUsage(char* programName)
 {
   ERR("Usage: %s <FILE>", programName);

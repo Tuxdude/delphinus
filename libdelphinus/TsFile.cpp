@@ -34,6 +34,8 @@
 
 #define ERR(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
 
+uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size);
+
 uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size)
 {
     uint64_t readSize = fread(buffer, size, 1, fileHandle);
