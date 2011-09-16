@@ -33,6 +33,8 @@ ifeq ($(BUILD_ARCHS),)
         $(error Variable $$BUILD_ARCHS must be set, aborting...)
     endif
 endif
+
+# Read the toolchain, utils and config makefiles
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
 include $(BASE_DIR)/tools/config.mk
@@ -47,16 +49,17 @@ else
     silent :=
 endif
 
+# Helpful functions
 define ExecWithMsg
   @echo -e "\n=== $(1)  ==="
   $(silent)$(2)
 endef
-
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
 EXPORT_TRIGGER := .export
 EXPORTS_DIR := $(BASE_DIR)/dist
 EXPORT_RELEASES_DIR := $(EXPORTS_DIR)/release
+
 # Remove duplicates in BUILD_ARCHS
 BUILD_ARCHS := $(sort $(BUILD_ARCHS))
 # Remove any archs not supported
@@ -79,9 +82,8 @@ endif
 EXPORT_LIBS_DIR = $(EXPORTS_DIR)/$(ARCH)/lib
 EXPORT_BINS_DIR = $(EXPORTS_DIR)/$(ARCH)/bin
 
+# Now choose the toolchain and architecture specific flags based on ARCH
 ARCH_FLAGS :=
-
-# Now choose the toolchain based on ARCH
 ifeq ($(ARCH),$(ARCH_HOST))
     CC      := $(HOST_CC)
     CXX     := $(HOST_CXX)
@@ -133,7 +135,6 @@ CFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
 CFLAGS += -std=gnu99
 CXXFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
 CPPFLAGS = $(INCPATH)
-
 LDFLAGS = -Wl,-O3 -Wl-z,defs
 LDFLAGS += -L$(EXPORT_LIBS_DIR)
 
@@ -170,15 +171,14 @@ ifneq ($(EXPORT_ALL_CMD),)
     EXPORT_DIST := $(call ExecWithMsg, "Exporting $(EXPORT_LIST) ARCH=$(ARCH)", $(EXPORT_ALL_CMD))
 endif
 
-# Setup the build and dependecy directories
+# Build and dependecy directories
 BUILD_DIR = $(ARCH)
 DEP_DIR = $(BUILD_DIR)/.dep
 
 # Clean-up files and directories
 CLEANUP_FILES += $(BUILD_DIR) $(EXPORTED_FILES)
 
-# TARGET comes in the very end after CLEANUP_TRIGGER .prereqs and
-# EXPORT_TRIGGER
+# Set up exporting files
 ifneq ($(TARGET),)
 ifneq ($(EXPORT_DIST),)
 local_all: $(EXPORT_TRIGGER)
@@ -213,7 +213,7 @@ ifneq ($(MAKECMDGOALS),dist_clean)
 endif
 endif
 
-# Dependencies and rules
+# Rules for building object files
 $(BUILD_DIR)/%.o: %.cpp
 	@echo -e "\n===  $< -> $@  ==="
 	$(silent)$(MAKEDEPEND_CXX) $(CXXFLAGS) $(CPPFLAGS) -MM -MF $(DEP_DIR)/$*.dep -MT $@ $<
@@ -240,10 +240,12 @@ CLEANUP_TRIGGER := .makefile
 CLEANUP_FILES += $(CLEANUP_TRIGGER)
 BASE_MAKEFILE := $(firstword $(MAKEFILE_LIST))
 
+# Filter out architectures which have not been configured for build
 ifneq ($(ONLY_BUILD_ARCHS),)
     BUILD_ARCHS := $(filter $(ONLY_BUILD_ARCHS),$(BUILD_ARCHS))
 endif
 
+# Directories to create and cleanup
 EXPORT_HEADERS_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include)
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
     EXPORT_HEADERS_DIRS += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include/$(EXPORT_HEADERS_PREFIX_DIR))
@@ -278,7 +280,7 @@ local_clean: $(__local_clean_archs)
 
 distclean: local_clean
 
-# Make sure .prereqs is before TARGET
+# Make sure .prereqs is the first
 ifneq ($(PRE_REQS),)
 all: .prereqs
 
