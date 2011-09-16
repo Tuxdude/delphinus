@@ -24,13 +24,20 @@
 BASE_DIR := ..
 BUILD_DIR := ./build
 
+include $(BASE_DIR)/tools/toolchain.mk
+BUILD_ARCHS := $(ARCH_HOST) $(ARCH_MINGW_W32) $(ARCH_MINGW_W64)
+
 sources := tsinfo.cpp
-objs := $(addprefix $(BUILD_DIR)/,$(sources:.cpp=.o))
+objs := $(addprefix $(ARCH)/,$(sources:.cpp=.o))
 
 SOURCES := $(sources)
-TARGET := $(BUILD_DIR)/tsinfo
-EXPORT_BINS := $(TARGET)
+TARGET = $(ARCH)/tsinfo
+EXPORT_BINS = $(TARGET)
 PRE_REQS := libdelphinus
+
+ifneq ($(ARCH),$(ARCH_HOST))
+    TARGET = $(ARCH)/tsinfo.exe
+endif
 
 include $(BASE_DIR)/tools/makesystem.mk
 

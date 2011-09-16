@@ -21,6 +21,9 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+ifndef DELPHINUS_UTILS_MK
+DELPHINUS_UTILS_MK := 1
+
 TOUCH := touch
 CD := cd
 CP := cp
@@ -34,3 +37,4 @@ SED := sed
 SVN := svn
 TAR := tar
 
+endif

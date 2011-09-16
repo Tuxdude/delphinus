@@ -21,18 +21,22 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+ifndef DELPHINUS_MAKESYSTEM_MK
+DELPHINUS_MAKESYSTEM_MK := 1
+
 # Verify BASE_DIR and BUILD_DIR are set and bail out if not
 ifeq ($(BASE_DIR),)
     $(error Variable $$BASE_DIR must be set, aborting...)
 endif
-ifeq ($(BUILD_DIR),)
+ifeq ($(BUILD_ARCHS),)
     ifneq ($(BASE_DIR),.)
-        $(error Variable $$BUILD_DIR must be set, aborting...)
+        $(error Variable $$BUILD_ARCHS must be set, aborting...)
     endif
 endif
-
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
+
+# Set the shell to bash
 SHELL := /bin/bash -e
 
 # Handle Verbose mode
@@ -47,39 +51,68 @@ define ExecWithMsg
   $(silent)$(2)
 endef
 
-# Set the shell to sh
-SHELL = /bin/sh
+reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
-# Setting up exports dir
 EXPORT_TRIGGER := .export
 EXPORTS_DIR := $(BASE_DIR)/dist
-EXPORT_HEADERS_BASE_DIR := $(EXPORTS_DIR)/include
-ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
-    EXPORT_HEADERS_DIR := $(EXPORT_HEADERS_BASE_DIR)/$(EXPORT_HEADERS_PREFIX_DIR)
-    REMOVE_EXPORT_HEADERS_PREFIX_DIR := $(RMDIR) $(EXPORT_HEADERS_DIR)
-else
-    EXPORT_HEADERS_DIR := $(EXPORT_HEADERS_BASE_DIR)
-endif
-EXPORT_LIBS_DIR := $(EXPORTS_DIR)/lib
-EXPORT_BINS_DIR := $(EXPORTS_DIR)/bin
 EXPORT_RELEASES_DIR := $(EXPORTS_DIR)/release
-$(shell $(MKDIR) $(EXPORTS_DIR))
-$(shell $(MKDIR) $(EXPORT_HEADERS_BASE_DIR))
-$(shell $(MKDIR) $(EXPORT_HEADERS_DIR))
-$(shell $(MKDIR) $(EXPORT_LIBS_DIR))
-$(shell $(MKDIR) $(EXPORT_BINS_DIR))
-$(shell $(MKDIR) $(EXPORT_RELEASES_DIR))
 
-# Settings for the release
-RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
-DELPHINUS := delphinus
-ifeq ($(MAKECMDGOALS),release)
-    SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
-    SVN_INFO := $(shell $(SVN_INFO_CMD) 1>/dev/null 2>/dev/null; echo $$?)
-    ifneq ($(SVN_INFO),0)
-        $(error "Cannot build the release files from a non-svn repo, aborting...")
-    endif
-    BRANCH_NAME := $(shell $(SVN_INFO_CMD) | $(GREP) URL | $(SED) 's/^.*\/\([a-zA-Z0-9.\-]*\)$$/\1/')
+# Make sure all is the first target
+all:
+
+ifneq ($(ARCH),)
+# When ARCH is set
+
+# Setting up exports dir
+EXPORT_HEADERS_BASE_DIR = $(EXPORTS_DIR)/$(ARCH)/include
+ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
+    EXPORT_HEADERS_DIR = $(EXPORT_HEADERS_BASE_DIR)/$(EXPORT_HEADERS_PREFIX_DIR)
+    REMOVE_EXPORT_HEADERS_PREFIX_DIR = $(RMDIR) $(EXPORT_HEADERS_DIR)
+else
+    EXPORT_HEADERS_DIR = $(EXPORT_HEADERS_BASE_DIR)
+endif
+EXPORT_LIBS_DIR = $(EXPORTS_DIR)/$(ARCH)/lib
+EXPORT_BINS_DIR = $(EXPORTS_DIR)/$(ARCH)/bin
+
+ARCH_FLAGS :=
+
+# Now choose the toolchain based on ARCH
+ifeq ($(ARCH),$(ARCH_HOST))
+    CC      := $(HOST_CC)
+    CXX     := $(HOST_CXX)
+    AS      := $(HOST_AS)
+    AR      := $(HOST_AR)
+    LD      := $(HOST_LD)
+    RANLIB  := $(HOST_RANLIB)
+    SIZE    := $(HOST_SIZE)
+    STRIP   := $(HOST_STRIP)
+    OBJCOPY := $(HOST_OBJCOPY)
+    NM      := $(HOST_NM)
+    ARCH_FLAGS += -fPIC
+endif
+ifeq ($(ARCH),$(ARCH_MINGW_W32))
+    CC      := $(MINGW_W32_CC)
+    CXX     := $(MINGW_W32_CXX)
+    AS      := $(MINGW_W32_AS)
+    AR      := $(MINGW_W32_AR)
+    LD      := $(MINGW_W32_LD)
+    RANLIB  := $(MINGW_W32_RANLIB)
+    SIZE    := $(MINGW_W32_SIZE)
+    STRIP   := $(MINGW_W32_STRIP)
+    OBJCOPY := $(MINGW_W32_OBJCOPY)
+    NM      := $(MINGW_W32_NM)
+endif
+ifeq ($(ARCH),$(ARCH_MINGW_W64))
+    CC      := $(MINGW_W64_CC)
+    CXX     := $(MINGW_W64_CXX)
+    AS      := $(MINGW_W64_AS)
+    AR      := $(MINGW_W64_AR)
+    LD      := $(MINGW_W64_LD)
+    RANLIB  := $(MINGW_W64_RANLIB)
+    SIZE    := $(MINGW_W64_SIZE)
+    STRIP   := $(MINGW_W64_STRIP)
+    OBJCOPY := $(MINGW_W64_OBJCOPY)
+    NM      := $(MINGW_W64_NM)
 endif
 
 # Setup compilation and linker flags
@@ -88,19 +121,18 @@ WARN_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strin
     -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith -Wmissing-declarations \
     -Wmissing-include-dirs -Wshadow -Wwrite-strings
 WARN_C_FLAGS := -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
-COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -pipe -fPIC
-INCPATH := -I. -I$(EXPORT_HEADERS_BASE_DIR)
+COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -pipe $(ARCH_FLAGS)
+INCPATH = -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
-CFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
+CFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
 CFLAGS += -std=gnu99
-CXXFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
-CPPFLAGS := $(INCPATH)
+CXXFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
+CPPFLAGS = $(INCPATH)
 
-LDFLAGS := -Wl,-O3 -Wl-z,defs
-# Check out what RPATH is
+LDFLAGS = -Wl,-O3 -Wl-z,defs
 LDFLAGS += -L$(EXPORT_LIBS_DIR)
 
-LINKER := $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))
+LINKER = $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))
 LDARGS = -o $@ $(filter %.o,$^) $(LDFLAGS) $(LINKMAP)
 LDARGS += $(if $(findstring $(CC), $(LINKER)),$(CFLAGS),$(CXXFLAGS))
 
@@ -111,8 +143,8 @@ LINK_SHARED = $(call ExecWithMsg, "Linking Shared library $@", $(LINKER) $(LDARG
 LINK_STATIC = $(call ExecWithMsg, "Linking Static library $@", $(AR) cru $@ $^)
 
 # Commands for exporting, and adding exported files to cleanup list
-EXPORT_ALL_CMD :=
-EXPORTED_FILES :=
+EXPORT_ALL_CMD =
+EXPORTED_FILES =
 ifneq ($(EXPORT_HEADERS),)
     EXPORT_ALL_CMD += $(CP) $(EXPORT_HEADERS) $(EXPORT_HEADERS_DIR);
     EXPORTED_FILES += $(addprefix $(EXPORT_HEADERS_DIR)/, $(notdir $(EXPORT_HEADERS)))
@@ -130,49 +162,17 @@ ifneq ($(EXPORT_ALL_CMD),)
 endif
 
 # Setup the build and dependecy directories
-DEFAULT_DEP_DIR := $(BUILD_DIR)/.dep
-ifeq ($(DEP_DIR),)
-    DEP_DIR := $(DEFAULT_DEP_DIR)
-endif
+BUILD_DIR = $(ARCH)
+DEP_DIR = $(BUILD_DIR)/.dep
 
 # Clean-up files and directories
-CLEANUP_TRIGGER := .makefile
-CLEANUP_FILES += $(BUILD_DIR) $(EXPORTED_FILES) $(CLEANUP_TRIGGER)
-BASE_MAKEFILE := $(firstword $(MAKEFILE_LIST))
+CLEANUP_FILES += $(BUILD_DIR) $(EXPORTED_FILES)
 
-# Make sure all is the first target
-all: $(CLEANUP_TRIGGER)
-
-# Make sure .prereqs is before TARGET
-ifneq ($(PRE_REQS),)
-all: .prereqs
-
-.prereqs:
-	$(silent)for dir in $(PRE_REQS);\
-	    do $(MAKE) -C $(BASE_DIR)/$${dir};\
-	    if [ $$? -ne 0 ]; then exit 1; fi\
-	    done
-
-distclean:
-	$(silent)for dir in $(PRE_REQS);\
-	    do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean;\
-            if [ $$? -ne 0 ]; then exit 1; fi\
-	    done
-	$(silent)$(MAKE) local_clean
-	$(silent)$(RM_RECURSIVE) $(EXPORT_RELEASES_DIR)
-	$(silent)$(RMDIR) $(EXPORT_HEADERS_DIR)
-	$(silent)$(RMDIR) $(EXPORT_LIBS_DIR)
-	$(silent)$(RMDIR) $(EXPORT_BINS_DIR)
-	$(silent)$(RMDIR) $(EXPORTS_DIR)
-else
-distclean:
-	$(MAKE) local_clean
-endif
-
-# TARGET comes after CLEANUP_TRIGGER and .prereqs
+# TARGET comes in the very end after CLEANUP_TRIGGER .prereqs and
+# EXPORT_TRIGGER
 ifneq ($(TARGET),)
 ifneq ($(EXPORT_DIST),)
-all: $(EXPORT_TRIGGER) $(TARGET)
+local_all: $(EXPORT_TRIGGER)
 
 $(EXPORT_TRIGGER): $(TARGET)
 	$(EXPORT_DIST)
@@ -185,8 +185,8 @@ endif
 endif
 
 # Handle header file dependecies
-MAKEDEPEND_C := gcc
-MAKEDEPEND_CXX := g++
+MAKEDEPEND_C := $(CC)
+MAKEDEPEND_CXX := $(CXX)
 GENERATE_DEP_FILES = $(CP) $(DEP_DIR)/$*.dep $(DEP_DIR)/$*.d; sed -e 's/\#.*//'\
     -e 's/^[^:]*: *//' -e 's/ *\\$$//' -e '/^$$/ d' -e 's/$$/ :/' <\
     $(DEP_DIR)/$*.dep >> $(DEP_DIR)/$*.d; $(RM) $(DEP_DIR)/$*.dep
@@ -217,17 +217,99 @@ $(BUILD_DIR)/%.o: %.c
 	$(silent)$(GENERATE_DEP_FILES)
 	$(silent)$(CC) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
-$(CLEANUP_TRIGGER): $(BASE_MAKEFILE)
-	$(silent)if [ -f $(CLEANUP_TRIGGER) ]; then $(MAKE) local_clean; fi
-	$(silent)if [ "$(BASE_DIR)" != "." ]; then $(MKDIR) $(BUILD_DIR);\
-	    $(MKDIR) $(DEP_DIR); fi
-	$(silent)$(MKDIR) $(EXPORT_HEADERS_DIR)
-	$(silent)$(TOUCH) $@
-
 local_all: $(TARGET)
 
 local_clean:
 	$(call ExecWithMsg, "Cleaning `pwd`", $(RM_RECURSIVE) $(CLEANUP_FILES); $(REMOVE_EXPORT_HEADERS_PREFIX_DIR))
+
+# End ARCH is set
+else
+# ARCH is not set
+
+# Clean-up files and directories
+CLEANUP_TRIGGER := .makefile
+CLEANUP_FILES += $(CLEANUP_TRIGGER)
+BASE_MAKEFILE := $(firstword $(MAKEFILE_LIST))
+
+EXPORT_HEADERS_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include)
+ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
+    EXPORT_HEADERS_DIRS += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include/$(EXPORT_HEADERS_PREFIX_DIR))
+endif
+
+DIRS_TO_CREATE := $(EXPORTS_DIR)
+DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch))
+DIRS_TO_CREATE += $(EXPORT_HEADERS_DIRS)
+DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/lib)
+DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/bin)
+DIRS_TO_CREATE += $(EXPORT_RELEASES_DIR)
+$(shell $(MKDIR) $(DIRS_TO_CREATE))
+
+BUILD_DIRS := $(BUILD_ARCHS)
+DEP_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(build_arch)/.dep)
+
+__local_all_archs = $(foreach build_arch,$(BUILD_ARCHS),.local_all__$(build_arch))
+__local_clean_archs = $(foreach build_arch,$(BUILD_ARCHS),.local_clean__$(build_arch))
+
+local_all: $(__local_all_archs)
+
+local_clean: $(__local_clean_archs)
+	$(RM_RECURSIVE) $(CLEANUP_FILES)
+
+.local_all__% .local_clean__%: ARCH = $(word 2,$(subst __, ,$@))
+
+.local_all__%: $(CLEANUP_TRIGGER)
+	ARCH=$(ARCH) $(MAKE) local_all
+
+.local_clean__%:
+	ARCH=$(ARCH) $(MAKE) local_clean
+
+distclean: local_clean
+
+# Make sure .prereqs is before TARGET
+ifneq ($(PRE_REQS),)
+all: .prereqs
+
+.prereqs:
+	$(silent)for dir in $(PRE_REQS);\
+	    do $(MAKE) -C $(BASE_DIR)/$${dir};\
+	    if [ $$? -ne 0 ]; then exit 1; fi\
+	    done
+
+distclean:
+	$(silent)for dir in $(PRE_REQS);\
+	    do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean;\
+            if [ $$? -ne 0 ]; then exit 1; fi\
+	    done
+	$(silent)$(RM_RECURSIVE) $(EXPORT_RELEASES_DIR)
+	$(silent)$(RMDIR) $(call reverse,$(DIRS_TO_CREATE))
+
+else
+distclean:
+	$(silent)$(RM_RECURSIVE) $(EXPORT_RELEASES_DIR)
+#	$(silent)$(RMDIR) $(call reverse,$(DIRS_TO_CREATE))
+endif
+
+all: local_all
+
+$(CLEANUP_TRIGGER): $(BASE_MAKEFILE)
+	$(silent)if [ -f $(CLEANUP_TRIGGER) ]; then $(MAKE) local_clean; fi
+	$(silent)if [ "$(BASE_DIR)" != "." ]; then $(MKDIR) $(BUILD_DIRS) $(DEP_DIRS) $(EXPORT_HEADERS_DIRS); fi
+	$(silent)$(TOUCH) $@
+
+#End ARCH is not set
+endif
+
+# Settings for the release
+RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
+DELPHINUS := delphinus
+ifeq ($(MAKECMDGOALS),release)
+    SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
+    SVN_INFO := $(shell $(SVN_INFO_CMD) 1>/dev/null 2>/dev/null; echo $$?)
+    ifneq ($(SVN_INFO),0)
+        $(error "Cannot build the release files from a non-svn repo, aborting...")
+    endif
+    BRANCH_NAME := $(shell $(SVN_INFO_CMD) | $(GREP) URL | $(SED) 's/^.*\/\([a-zA-Z0-9.\-]*\)$$/\1/')
+endif
 
 # The target release only builds if the entire build goes through although it
 # doesn't require any files to be exported from the build itself
@@ -257,5 +339,6 @@ help:
 	@echo -e "make help         : Display this help message"
 
 
-.PHONY: all local_all local_clean distclean help .prereqs release
+.PHONY: all local_all local_clean distclean help .prereqs release .local_all__* .local_clean__*
 
+endif

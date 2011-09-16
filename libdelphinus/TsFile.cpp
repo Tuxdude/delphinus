@@ -26,6 +26,11 @@
 
 //#define DEBUG
 
+#ifdef WIN32
+#define fseeko(x,y,z) fseeko64(x,y,z)
+#define ftello(x) ftello64(x)
+#endif
+
 #ifdef DEBUG
 #define MSG(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
 #else

@@ -21,17 +21,24 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+
 sources := Ts.cpp Pes.cpp PsiTables.cpp TsFile.cpp
 BASE_DIR := ..
-BUILD_DIR := ./build
 
-objs := $(addprefix $(BUILD_DIR)/,$(sources:.cpp=.o))
+include $(BASE_DIR)/tools/toolchain.mk
+BUILD_ARCHS := $(ARCH_HOST) $(ARCH_MINGW_W32) $(ARCH_MINGW_W64)
+
+objs = $(addprefix $(ARCH)/,$(sources:.cpp=.o))
 
 SOURCES := $(sources)
-TARGET := $(BUILD_DIR)/libdelphinus.so
+TARGET = $(ARCH)/libdelphinus.so
 EXPORT_HEADERS_PREFIX_DIR := libdelphinus
 EXPORT_HEADERS := Ts.h TsFile.h Pes.h
-EXPORT_LIBS := $(TARGET)
+EXPORT_LIBS = $(TARGET)
+
+ifneq ($(ARCH),$(ARCH_HOST))
+    TARGET = $(ARCH)/libdelphinus.dll
+endif
 
 include $(BASE_DIR)/tools/makesystem.mk
 
