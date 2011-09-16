@@ -35,6 +35,7 @@ ifeq ($(BUILD_ARCHS),)
 endif
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
+include $(BASE_DIR)/tools/config.mk
 
 # Set the shell to bash
 SHELL := /bin/bash -e
@@ -56,6 +57,10 @@ reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstwor
 EXPORT_TRIGGER := .export
 EXPORTS_DIR := $(BASE_DIR)/dist
 EXPORT_RELEASES_DIR := $(EXPORTS_DIR)/release
+# Remove duplicates in BUILD_ARCHS
+BUILD_ARCHS := $(sort $(BUILD_ARCHS))
+# Remove any archs not supported
+BUILD_ARCHS := $(filter $(ARCHS),$(BUILD_ARCHS))
 
 # Make sure all is the first target
 all:
@@ -234,6 +239,10 @@ else
 CLEANUP_TRIGGER := .makefile
 CLEANUP_FILES += $(CLEANUP_TRIGGER)
 BASE_MAKEFILE := $(firstword $(MAKEFILE_LIST))
+
+ifneq ($(ONLY_BUILD_ARCHS),)
+    BUILD_ARCHS := $(filter $(ONLY_BUILD_ARCHS),$(BUILD_ARCHS))
+endif
 
 EXPORT_HEADERS_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include)
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
