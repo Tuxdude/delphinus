@@ -24,6 +24,7 @@
 
 #include "libdelphinus/TsFile.h"
 #include "libdelphinus/Pes.h"
+#include <inttypes.h>
 
 #define DEBUG
 
@@ -63,7 +64,7 @@ int main(int argc, char* argv[])
     }
 
     MSG("-----------------------------------------------------------");
-    MSG("File size: %lu bytes", tsFile.getFileSize());
+    MSG("File size: %" PRIu64 " bytes", tsFile.getFileSize());
     MSG("-----------------------------------------------------------");
 
     uint64_t packetCount = 0;
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
 //        MSG("PID: 0x%03x", pid);
         if (pid != TsPacket::PID_NULL)
         {
-            MSG("Packet: %lu", packetCount);
+            MSG("Packet: %" PRId64 "", packetCount);
             MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
             MSG("TEI: 0x%01x", tsPacket->getTransportErrorIndicator());
             MSG("PUSI: 0x%01x", tsPacket->getPayloadUnitStartIndicator());
@@ -88,10 +89,10 @@ int main(int argc, char* argv[])
             if (tsPacket->hasPayload())
             {
                 pesPacket.parse(tsPacket->getPayload());
-                MSG("hasAdaptation: %d PES Start Code: %08x",
+                MSG("hasAdaptation: %d PES Start Code: 0x%08x",
                     tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());
-                MSG("streamId: %02x", pesPacket.getStreamId());
-                MSG("PES packet length: %02x", pesPacket.getLength());
+                MSG("streamId: 0x%02x", pesPacket.getStreamId());
+                MSG("PES packet length: 0x%02x", pesPacket.getLength());
             }
             MSG("-----------------------------------------------------------");
         }

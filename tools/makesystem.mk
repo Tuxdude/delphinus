@@ -121,7 +121,7 @@ WARN_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strin
     -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith -Wmissing-declarations \
     -Wmissing-include-dirs -Wshadow -Wwrite-strings
 WARN_C_FLAGS := -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
-COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -pipe $(ARCH_FLAGS)
+COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
 INCPATH = -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
 CFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
@@ -145,20 +145,24 @@ LINK_STATIC = $(call ExecWithMsg, "Linking Static library $@", $(AR) cru $@ $^)
 # Commands for exporting, and adding exported files to cleanup list
 EXPORT_ALL_CMD =
 EXPORTED_FILES =
+EXPORT_LIST =
 ifneq ($(EXPORT_HEADERS),)
     EXPORT_ALL_CMD += $(CP) $(EXPORT_HEADERS) $(EXPORT_HEADERS_DIR);
     EXPORTED_FILES += $(addprefix $(EXPORT_HEADERS_DIR)/, $(notdir $(EXPORT_HEADERS)))
+    EXPORT_LIST += $(notdir $(EXPORT_HEADERS))
 endif
 ifneq ($(EXPORT_LIBS),)
     EXPORT_ALL_CMD += $(CP) $(EXPORT_LIBS) $(EXPORT_LIBS_DIR);
     EXPORTED_FILES += $(addprefix $(EXPORT_LIBS_DIR)/, $(notdir $(EXPORT_LIBS)))
+    EXPORT_LIST += $(notdir $(EXPORT_LIBS))
 endif
 ifneq ($(EXPORT_BINS),)
     EXPORT_ALL_CMD += $(CP) $(EXPORT_BINS) $(EXPORT_BINS_DIR);
     EXPORTED_FILES += $(addprefix $(EXPORT_BINS_DIR)/, $(notdir $(EXPORT_BINS)))
+    EXPORT_LIST += $(notdir $(EXPORT_BINS))
 endif
 ifneq ($(EXPORT_ALL_CMD),)
-    EXPORT_DIST := $(call ExecWithMsg, "Exporting", $(EXPORT_ALL_CMD))
+    EXPORT_DIST := $(call ExecWithMsg, "Exporting $(EXPORT_LIST) ARCH=$(ARCH)", $(EXPORT_ALL_CMD))
 endif
 
 # Setup the build and dependecy directories
@@ -220,7 +224,7 @@ $(BUILD_DIR)/%.o: %.c
 local_all: $(TARGET)
 
 local_clean:
-	$(call ExecWithMsg, "Cleaning `pwd`", $(RM_RECURSIVE) $(CLEANUP_FILES); $(REMOVE_EXPORT_HEADERS_PREFIX_DIR))
+	$(call ExecWithMsg, "Cleaning `pwd` ARCH=$(ARCH)", $(RM_RECURSIVE) $(CLEANUP_FILES); $(REMOVE_EXPORT_HEADERS_PREFIX_DIR))
 
 # End ARCH is set
 else
@@ -253,15 +257,15 @@ __local_clean_archs = $(foreach build_arch,$(BUILD_ARCHS),.local_clean__$(build_
 local_all: $(__local_all_archs)
 
 local_clean: $(__local_clean_archs)
-	$(RM_RECURSIVE) $(CLEANUP_FILES)
+	$(silent)$(RM_RECURSIVE) $(CLEANUP_FILES)
 
 .local_all__% .local_clean__%: ARCH = $(word 2,$(subst __, ,$@))
 
 .local_all__%: $(CLEANUP_TRIGGER)
-	ARCH=$(ARCH) $(MAKE) local_all
+	$(silent)ARCH=$(ARCH) $(MAKE) local_all
 
 .local_clean__%:
-	ARCH=$(ARCH) $(MAKE) local_clean
+	$(silent)ARCH=$(ARCH) $(MAKE) local_clean
 
 distclean: local_clean
 
@@ -275,18 +279,18 @@ all: .prereqs
 	    if [ $$? -ne 0 ]; then exit 1; fi\
 	    done
 
-distclean:
+clean:
 	$(silent)for dir in $(PRE_REQS);\
 	    do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean;\
             if [ $$? -ne 0 ]; then exit 1; fi\
 	    done
-	$(silent)$(RM_RECURSIVE) $(EXPORT_RELEASES_DIR)
-	$(silent)$(RMDIR) $(call reverse,$(DIRS_TO_CREATE))
+
+distclean: clean
+	$(silent)$(RM_RECURSIVE) $(call reverse,$(DIRS_TO_CREATE))
 
 else
 distclean:
-	$(silent)$(RM_RECURSIVE) $(EXPORT_RELEASES_DIR)
-#	$(silent)$(RMDIR) $(call reverse,$(DIRS_TO_CREATE))
+	$(silent)$(RM_RECURSIVE) $(call reverse,$(DIRS_TO_CREATE))
 endif
 
 all: local_all
@@ -330,15 +334,15 @@ release:
 	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
 
 help:
-	@echo -e "Buildable targets: $(TARGET)"
 	@echo -e "make/make all     : Build the targets and the dependencies"
 	@echo -e "make local_all    : Build the targets without checking for dependencies"
 	@echo -e "make local_clean  : Clean the targets but not the dependencies"
-	@echo -e "make distclean    : Clean the targets and the dependencies"
+	@echo -e "make clean        : Clean the targets and the dependencies"
+	@echo -e "make distclean    : Clean the targets, the dependencies and the dist directory(completely)"
 	@echo -e "make release      : Buidl the release tarballs (requires the codebase to be from an SVN repo)"
 	@echo -e "make help         : Display this help message"
 
 
-.PHONY: all local_all local_clean distclean help .prereqs release .local_all__* .local_clean__*
+.PHONY: all local_all clean local_clean distclean help .prereqs release .local_all__* .local_clean__*
 
 endif

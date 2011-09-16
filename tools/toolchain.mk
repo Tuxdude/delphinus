@@ -72,6 +72,4 @@ ARCH_HOST := $(shell $(HOST_CC) -v 2>&1 | $(GREP) 'Target: ' | $(SED_EXTRACT_CMD
 ARCH_MINGW_W32 := $(shell $(MINGW_W32_CC) -v 2>&1 | $(GREP) 'Target: ' | $(SED_EXTRACT_CMD))
 ARCH_MINGW_W64 := $(shell $(MINGW_W64_CC) -v 2>&1 | $(GREP) 'Target: ' | $(SED_EXTRACT_CMD))
 
-$(info $(ARCH_HOST))
-
 endif
