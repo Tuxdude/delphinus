@@ -24,6 +24,7 @@
 
 #include "PsiTables.h"
 #include <cstddef>
+#include <cassert>
 
 PsiSection::PsiSection()
     : start(NULL)
@@ -41,5 +42,25 @@ inline bool PsiSection::parse(uint8_t* data)
     start = data + *(data);
     return (PSI_GET_SSI(PSI_HEADER_START) == 1 &&
             PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0);
+}
+
+PatSection::PatSection()
+    : start(NULL)
+{
+}
+
+PatSection::~PatSection()
+{
+}
+
+void PatSection::parse(uint8_t* data)
+{
+    start = data;
+    assert(PSI_GET_TABLE_ID(PSI_HEADER_START) == PsiSection::TABLE_PAT);
+    transportStreamId = PSI_GET_TABLE_ID_EXTN(PSI_HEADER_START);
+
+    uint16_t sectionLength = PSI_GET_LENGTH(PSI_HEADER_START);
+    // We do not yet support sections split across TS packets
+    assert(PSI_GET_SECTION_NUMBER(PSI_HEADER_START) == 0);
 }
 

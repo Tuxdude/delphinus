@@ -32,7 +32,7 @@
 // 0                            1
 // reserved                     2
 // section length               12
-// Intermediate field           16
+// Table ID Extension           16
 // reserved                     2
 // Version Number               5
 // Current Next indicator       1
@@ -89,6 +89,8 @@ class PsiSection
         uint8_t getSectionNumber();
         uint8_t getLastSectionNumber();
         uint8_t* getData();
+
+        friend class PatSection;
 };
 
 class PatSection
@@ -101,6 +103,14 @@ class PatSection
         };
         typedef std::list<ProgramInfo> ProgramList;
     private:
+        struct PatProgramInfo
+        {
+            uint8_t byte0;
+            uint8_t byte1;
+            uint8_t byte2;
+            uint8_t byte3;
+        };
+        ProgramList programList;
         uint16_t transportStreamId;
         uint16_t networkPid;
         uint8_t* start;
@@ -111,7 +121,7 @@ class PatSection
 
         void parse(uint8_t* data);
         uint16_t getTransportStreamId();
-        void getPrograms(ProgramList);
+        const ProgramList& getPrograms();
         uint16_t getNetworkPid();
 };
 
@@ -204,7 +214,14 @@ class PmtSection
 #define PSI_GET_SECTION_NUMBER(x)       (x->byte6)
 #define PSI_GET_LAST_SECTION_NUMBER(x)  (x->byte7)
 
-#define PSI_HEADER_START                ((PsiSectionHeader*)(start))
+#define PSI_HEADER_START                ((PsiSection::PsiSectionHeader*)(start))
+
+#define PAT_PROG_NUMBER_SHIFT           8
+#define PAT_PID_MASK                    0x1FFF
+#define PAT_PID_SHIFT                   8
+
+#define PAT_GET_PROG_NUMBER(x)          (((x->byte0) << PAT_PROG_NUMBER_SHIFT) | (x->byte1))
+#define PAT_GET_PID(x)                  (((x->byte2 << PAT_PROG_NUMBER_SHIFT) | (x->byte3)) & PAT_PID_MASK)
 
 inline uint8_t PsiSection::getTableId()
 {
@@ -245,5 +262,21 @@ inline uint8_t* PsiSection::getData()
 {
     return start + sizeof(struct PsiSectionHeader);
 }
+
+inline uint16_t PatSection::getTransportStreamId()
+{
+    return transportStreamId;
+}
+
+inline const PatSection::ProgramList& PatSection::getPrograms()
+{
+    return programList;
+}
+
+inline uint16_t PatSection::getNetworkPid()
+{
+    return networkPid;
+}
+
 
 #endif
