@@ -73,6 +73,7 @@ class PsiSection
             uint8_t byte7;
         };
         uint8_t* start;
+        uint8_t pointerField;
 
     public:
         PsiSection();
@@ -81,6 +82,7 @@ class PsiSection
         //Note: the first byte to parse should be the pointer field
         //i.e. the first byte of the payload
         bool parse(uint8_t* data);
+        uint8_t getPointerField();
         uint8_t getTableId();
         uint16_t getLength();
         uint16_t getTableIdExtension();
@@ -110,16 +112,26 @@ class PatSection
             uint8_t byte2;
             uint8_t byte3;
         };
+
+        bool isComplete;
         ProgramList programList;
+        uint16_t sectionLength;
         uint16_t transportStreamId;
         uint16_t networkPid;
         uint8_t* start;
+        uint16_t validSize;
+        uint8_t currentSection;
+        uint8_t lastSection;
 
     public:
         PatSection();
         ~PatSection();
 
-        void parse(uint8_t* data);
+        void clear();
+        void parse(uint8_t* data, uint16_t size);
+        void append(uint8_t* data, uint16_t size);
+        bool isCompleteSection();
+
         uint16_t getTransportStreamId();
         const ProgramList& getPrograms();
         uint16_t getNetworkPid();
@@ -223,6 +235,11 @@ class PmtSection
 #define PAT_GET_PROG_NUMBER(x)          (((x->byte0) << PAT_PROG_NUMBER_SHIFT) | (x->byte1))
 #define PAT_GET_PID(x)                  (((x->byte2 << PAT_PROG_NUMBER_SHIFT) | (x->byte3)) & PAT_PID_MASK)
 
+inline uint8_t PsiSection::getPointerField()
+{
+    return pointerField;
+}
+
 inline uint8_t PsiSection::getTableId()
 {
     return PSI_GET_TABLE_ID(PSI_HEADER_START);
@@ -261,6 +278,11 @@ inline uint8_t PsiSection::getLastSectionNumber()
 inline uint8_t* PsiSection::getData()
 {
     return start + sizeof(struct PsiSectionHeader);
+}
+
+inline bool PatSection::isCompleteSection()
+{
+    return isComplete;
 }
 
 inline uint16_t PatSection::getTransportStreamId()

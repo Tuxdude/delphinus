@@ -25,6 +25,9 @@
 #include "PsiTables.h"
 #include <cstddef>
 #include <cassert>
+#include <cstring>
+
+#define GET_LESS(x, y) ((x) < (y) ? (x) : (y))
 
 PsiSection::PsiSection()
     : start(NULL)
@@ -39,7 +42,8 @@ inline bool PsiSection::parse(uint8_t* data)
 {
     // The first byte to parse should is the pointer field
     // giving the offset to where the section data starts
-    start = data + *(data);
+    pointerField = *data;
+    start = data + pointerField;
     return (PSI_GET_SSI(PSI_HEADER_START) == 1 &&
             PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0);
 }
@@ -53,14 +57,53 @@ PatSection::~PatSection()
 {
 }
 
-void PatSection::parse(uint8_t* data)
+void PatSection::clear()
 {
-    start = data;
-    assert(PSI_GET_TABLE_ID(PSI_HEADER_START) == PsiSection::TABLE_PAT);
-    transportStreamId = PSI_GET_TABLE_ID_EXTN(PSI_HEADER_START);
+    if (start)
+    {
+        delete start;
+        start = NULL;
+    }
+    isComplete = false;
+    sectionLength = 0;
+    validSize = 0;
+}
 
-    uint16_t sectionLength = PSI_GET_LENGTH(PSI_HEADER_START);
-    // We do not yet support sections split across TS packets
-    assert(PSI_GET_SECTION_NUMBER(PSI_HEADER_START) == 0);
+void PatSection::parse(uint8_t* data, uint16_t size)
+{
+    clear();
+    sectionLength = PSI_GET_LENGTH(((PsiSection::PsiSectionHeader*)data));
+    transportStreamId = PSI_GET_TABLE_ID_EXTN(((PsiSection::PsiSectionHeader*)data));
+    currentSection = PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == PsiSection::TABLE_PAT);
+    assert(currentSection == 0);
+    start = new uint8_t[sectionLength];
+    uint16_t copyingSize = GET_LESS(size - 8, sectionLength);
+    memcpy(start, data + 8, copyingSize);
+    validSize = copyingSize;
+    if (lastSection == currentSection)
+    {
+        assert(sectionLength == validSize);
+        isComplete = true;
+    }
+}
+
+void PatSection::append(uint8_t* data, uint16_t size)
+{
+    assert(!isComplete && currentSection < lastSection);
+    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == PsiSection::TABLE_PAT);
+    assert(PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == currentSection + 1);
+    assert(PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == lastSection);
+    ++currentSection;
+    uint16_t copyingSize = GET_LESS(size - 8, sectionLength - validSize);
+    memcpy(start + validSize, data + 8, copyingSize);
+    validSize += copyingSize;
+    if (lastSection == currentSection)
+    {
+        assert(sectionLength == validSize);
+        isComplete = true;
+    }
 }
 
