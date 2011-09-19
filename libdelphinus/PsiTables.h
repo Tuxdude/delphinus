@@ -123,6 +123,8 @@ class PatSection
         uint8_t currentSection;
         uint8_t lastSection;
 
+        void parsePrograms();
+
     public:
         PatSection();
         ~PatSection();

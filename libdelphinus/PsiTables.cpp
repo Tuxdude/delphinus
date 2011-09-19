@@ -48,6 +48,12 @@ inline bool PsiSection::parse(uint8_t* data)
             PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0);
 }
 
+void PatSection::parsePrograms()
+{
+    // TODO: Add code here for parsing the program info
+    // from the section
+}
+
 PatSection::PatSection()
     : start(NULL)
 {
@@ -86,6 +92,7 @@ void PatSection::parse(uint8_t* data, uint16_t size)
     {
         assert(sectionLength == validSize);
         isComplete = true;
+        parsePrograms();
     }
 }
 
@@ -104,6 +111,7 @@ void PatSection::append(uint8_t* data, uint16_t size)
     {
         assert(sectionLength == validSize);
         isComplete = true;
+        parsePrograms();
     }
 }
 
