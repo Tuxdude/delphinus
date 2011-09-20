@@ -65,6 +65,7 @@ PsiSectionCommon::PsiSectionCommon()
 
 PsiSectionCommon::~PsiSectionCommon()
 {
+    clear();
 }
 
 void PsiSectionCommon::clear()
@@ -161,8 +162,27 @@ PatSection::~PatSection()
 
 void PmtSection::onComplete()
 {
-    // TODO:
     // Parsing the PMT info
+    pcrPid = PMT_GET_PCR_PID(((ByteField*)start));
+    
+    programInfoDescriptor.size = PMT_GET_PROG_INFO_LENGTH(((ByteField*)start));
+    programInfoDescriptor.start = start + 4;
+
+    // Parse the Stream info
+    uint8_t* data = start + 4 + programInfoDescriptor.size;
+    uint16_t remainingData = sectionLength - 4 - programInfoDescriptor.size;
+    streamList.clear();
+    StreamInfo info;
+    while (remainingData > 4)
+    {
+        info.streamType = PMT_GET_STREAM_TYPE(((ByteField*)data));
+        info.pid = PMT_GET_ES_PID(((ByteField*)data));
+        info.descriptor.size = PMT_GET_ES_INFO_LENGTH(((ByteField*)data));
+        info.descriptor.start = data + 5;
+        streamList.push_back(info);
+        data += (5 + info.descriptor.size);
+        remainingData -= (5 + info.descriptor.size);
+    }
 }
 
 PmtSection::PmtSection()
@@ -174,6 +194,69 @@ PmtSection::PmtSection()
 
 PmtSection::~PmtSection()
 {
+}
+
+const char* PmtSection::getStreamTypeStr(uint8_t streamType)
+{
+    switch(streamType)
+    {
+        case STREAM_TYPE_RESERVED:
+            return "ITU-T | ISO/IEC Reserved";
+        case STREAM_TYPE_11172_VIDEO:
+            return "ISO/IEC 11172 Video";
+        case STREAM_TYPE_13818_2_VIDEO:
+            return "ITU-T Rec. H.262 | ISO/IEC 13818-2 Video or \
+ISO/IEC 11172-2 constrained parameter video stream";
+        case STREAM_TYPE_11172_AUDIO:
+            return "ISO/IEC 11172 Audio";
+        case STREAM_TYPE_13818_3_AUDIO:
+            return "ISO/IEC 13818-3 Audio";
+        case STREAM_TYPE_13818_1_PRIVATE_SECTIONS:
+            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 private_sections";
+        case STREAM_TYPE_13818_1_PES_PRIVATE_DATA:
+            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 PES packets containing private data";
+        case STREAM_TYPE_13522_MHEG:
+            return "ISO/IEC 13522 MHEG";
+        case STREAM_TYPE_13818_1_DSMCC:
+            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Annex A DSM-CC";
+        case STREAM_TYPE_H222_1:
+            return "ITU-T Rec. H.222.1";
+        case STREAM_TYPE_13818_6_TYPE_A:
+            return "ISO/IEC 13818-6 type A";
+        case STREAM_TYPE_13818_6_TYPE_B:
+            return "ISO/IEC 13818-6 type B";
+        case STREAM_TYPE_13818_6_TYPE_C:
+            return "ISO/IEC 13818-6 type C";
+        case STREAM_TYPE_13818_6_TYPE_D:
+            return "ISO/IEC 13818-6 type D";
+        case STREAM_TYPE_13818_1_AUX:
+            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 auxiliary";
+        case STREAM_TYPE_13818_7_AAC_ADTS:
+            return "ISO/IEC 13818-7 Audio with ADTS transport syntax";
+        case STREAM_TYPE_14496_2_VISUAL:
+            return "ISO/IEC 14496-2 Visual";
+        case STREAM_TYPE_14496_3_AAC_LATM:
+            return "ISO/IEC 14496-3 Audio with the LATM transport syntax as defined in ISO/IEC 14496-3 / AMD 1";
+        case STREAM_TYPE_14496_1_FLEXMUX_PES:
+            return "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in PES packets";
+        case STREAM_TYPE_14496_1_FLEXMUX_SECTIONS:
+            return "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in ISO/IEC14496_sections.";
+        case STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL:
+            return "ISO/IEC 13818-6 Synchronized Download Protocol";
+        default:
+            {
+                if (streamType >= STREAM_TYPE_USER_PRIVATE_START &&
+                    streamType <= STREAM_TYPE_USER_PRIVATE_END)
+                {
+                    return "User Private";
+                }
+                else if (streamType >= STREAM_TYPE_13818_1_RESERVED_START &&
+                         streamType <= STREAM_TYPE_13818_1_RESERVED_END)
+                {
+                    return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Reserved";
+                }
+            }
+    }
 }
 
 CatSection::CatSection()

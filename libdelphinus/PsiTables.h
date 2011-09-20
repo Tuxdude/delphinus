@@ -210,6 +210,8 @@ class PmtSection : public PsiSectionCommon
         PmtSection();
         ~PmtSection();
 
+        static const char* getStreamTypeStr(uint8_t streamType);
+
         void parse(uint8_t* data, uint16_t size);
         void append(uint8_t* data, uint16_t size);
 

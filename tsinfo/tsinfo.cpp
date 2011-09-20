@@ -25,7 +25,7 @@
 #include "libdelphinus/TsFile.h"
 #include "libdelphinus/Pes.h"
 #include "libdelphinus/PsiTables.h"
-#include <inttypes.h>
+#include <cassert>
 
 #define DEBUG
 
@@ -78,15 +78,17 @@ int main(int argc, char* argv[])
 //        MSG("PID: 0x%03x", pid);
         if (pid != TsPacket::PID_NULL)
         {
-//            MSG("Packet: %" PRId64 "", packetCount);
-//            MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
-//            MSG("TEI: 0x%01x", tsPacket->getTransportErrorIndicator());
-//            MSG("PUSI: 0x%01x", tsPacket->getPayloadUnitStartIndicator());
-//            MSG("Transport Priority: 0x%01x", tsPacket->getTransportPriority());
-//            MSG("PID: 0x%03x", pid);
-//            MSG("Scrambling Control: 0x%01x", tsPacket->getTransportScramblingControl());
-//            MSG("Adaptation Field Control: 0x%01x", tsPacket->getAdaptationFieldControl());
-//            MSG("Continuity Counter: 0x%01x", tsPacket->getContinuityCounter());
+#if 0
+            MSG("Packet: %" PRId64 "", packetCount);
+            MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
+            MSG("TEI: 0x%01x", tsPacket->getTransportErrorIndicator());
+            MSG("PUSI: 0x%01x", tsPacket->getPayloadUnitStartIndicator());
+            MSG("Transport Priority: 0x%01x", tsPacket->getTransportPriority());
+            MSG("PID: 0x%03x", pid);
+            MSG("Scrambling Control: 0x%01x", tsPacket->getTransportScramblingControl());
+            MSG("Adaptation Field Control: 0x%01x", tsPacket->getAdaptationFieldControl());
+            MSG("Continuity Counter: 0x%01x", tsPacket->getContinuityCounter());
+#endif
             if (tsPacket->hasPayload() && tsPacket->getPayloadUnitStartIndicator())
             {
                 pesPacket.parse(tsPacket->getPayload());
@@ -95,21 +97,60 @@ int main(int argc, char* argv[])
                     // It must be a section
                     PsiSection psiSection;
 #if 1
-                    if (psiSection.parse(tsPacket->getPayload()) &&
-                        psiSection.getTableId() == PsiSection::TABLE_PAT)
+                    if (psiSection.parse(tsPacket->getPayload()))
                     {
-                        PatSection patSection;
-                        uint16_t dataSize = tsPacket->getPacketSize() - tsPacket->getPayloadOffset() -
-                                            1 - psiSection.getPointerField();
-                        patSection.parse(tsPacket->getPayload(), dataSize);
-                        // We either dont have the complete PAT section yet
-                        // or it is an invalid PAT section
-                        const PatSection::ProgramList& programs = patSection.getPrograms();
-                        for (PatSection::ProgramList::const_iterator ix = programs.begin();
-                             ix != programs.end(); ++ix)
+                        if (psiSection.getTableId() == PsiSection::TABLE_PAT)
                         {
-                            MSG("Program Number: 0x%02x PMT PID: 0x%03x",
-                                ix->programNumber, ix->pmtPid);
+                            PatSection patSection;
+                            uint16_t dataSize = tsPacket->getPacketSize() - tsPacket->getPayloadOffset() -
+                                1 - psiSection.getPointerField();
+                            patSection.parse(tsPacket->getPayload(), dataSize);
+                            if (patSection.isCompleteSection())
+                            {
+                                MSG("PID: 0x%03x", tsPacket->getPid());
+                                const PatSection::ProgramList& programs = patSection.getPrograms();
+                                for (PatSection::ProgramList::const_iterator ix = programs.begin();
+                                     ix != programs.end(); ++ix)
+                                {
+                                    MSG("Program Number: %u PMT PID: 0x%03x",
+                                        ix->programNumber, ix->pmtPid);
+                                }
+                            }
+                            else
+                            {
+                                // We either dont have the complete PAT section yet
+                                // or it is an invalid PAT section
+                                assert(false);
+                            }
+                        }
+                        else if (psiSection.getTableId() == PsiSection::TABLE_PMT)
+                        {
+                            PmtSection pmtSection;
+                            uint16_t dataSize = tsPacket->getPacketSize() - tsPacket->getPayloadOffset() -
+                                1 - psiSection.getPointerField();
+                            pmtSection.parse(tsPacket->getPayload(), dataSize);
+                            if (pmtSection.isCompleteSection())
+                            {
+                                MSG("----------------------------------------------------------------");
+                                MSG("PID: 0x%03x", tsPacket->getPid());
+                                MSG("Program Number: %u", pmtSection.getProgramNumber());
+                                MSG("PCR PID: 0x%03x", pmtSection.getPcrPid());
+                                const PmtSection::StreamList& streams = pmtSection.getStreamList();
+                                for (PmtSection::StreamList::const_iterator ix = streams.begin();
+                                     ix != streams.end(); ++ix)
+                                {
+                                    MSG("PID: 0x%02x StreamType: 0x%02x %s",
+                                        ix->pid, ix->streamType,
+                                        PmtSection::getStreamTypeStr(ix->streamType));
+                                }
+                                MSG("----------------------------------------------------------------");
+                            }
+                            else
+                            {
+                                // We either dont have the complete PMT section yet
+                                // or it is an invalid PMT section
+                                assert(false);
+                            }
                         }
                     }
 #endif
