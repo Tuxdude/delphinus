@@ -24,7 +24,7 @@
 
 #ifndef DELPHINUS_TS_H
 #define DELPHINUS_TS_H
-#include <inttypes.h>
+#include "common/DelphinusUtils.h"
 
 class TsPacket
 {
@@ -40,13 +40,6 @@ class TsPacket
         };
 
     private:
-        struct TsHeader
-        {
-            uint8_t byte0;
-            uint8_t byte1;
-            uint8_t byte2;
-            uint8_t byte3;
-        };
         uint8_t* start;
         uint8_t startOffset;
         uint8_t packetSize;
@@ -154,7 +147,7 @@ class AdaptationFieldExtension
 #define TS_GET_AFC(x)                   ((x->byte3 & TS_AFC_MASK) >> TS_AFC_SHIFT)
 #define TS_GET_CC(x)                    (x->byte3 & TS_CC_MASK)
 
-#define TS_HEADER_START                 ((TsHeader*)(start + startOffset))
+#define TS_HEADER_START                 ((ByteField*)(start + startOffset))
 
 inline uint8_t* TsPacket::getStart()
 {

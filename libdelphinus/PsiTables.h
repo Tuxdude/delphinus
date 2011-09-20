@@ -24,7 +24,7 @@
 
 #ifndef DELPHINUS_PSI_TABLES_H
 #define DELPHINUS_PSI_TABLES_H
-#include <inttypes.h>
+#include "common/DelphinusUtils.h"
 #include <list>
 
 // Table ID                     8
@@ -39,6 +39,12 @@
 // Section number               8
 // Last section number          8
 // Data
+
+struct PsiDescriptor
+{
+    uint8_t* start;
+    uint16_t size;
+};
 
 class PsiSection
 {
@@ -61,17 +67,6 @@ class PsiSection
         };
 
     private:
-        struct PsiSectionHeader
-        {
-            uint8_t byte0;
-            uint8_t byte1;
-            uint8_t byte2;
-            uint8_t byte3;
-            uint8_t byte4;
-            uint8_t byte5;
-            uint8_t byte6;
-            uint8_t byte7;
-        };
         uint8_t* start;
         uint8_t pointerField;
 
@@ -126,15 +121,8 @@ class PatSection : public PsiSectionCommon
             uint16_t pmtPid;
         };
         typedef std::list<ProgramInfo> ProgramList;
-    private:
-        struct PatProgramInfo
-        {
-            uint8_t byte0;
-            uint8_t byte1;
-            uint8_t byte2;
-            uint8_t byte3;
-        };
 
+    private:
         ProgramList programList;
         uint16_t networkPid;
 
@@ -156,6 +144,7 @@ class CatSection : public PsiSectionCommon
 {
     private:
         uint8_t* start;
+        PsiDescriptor descriptor;
 
         void onComplete();
 
@@ -166,7 +155,7 @@ class CatSection : public PsiSectionCommon
         void parse(uint8_t* data, uint16_t size);
         void append(uint8_t* data, uint16_t size);
 
-        uint8_t* getDescriptor();
+        const PsiDescriptor& getDescriptor();
 };
 
 // FIXME: All descriptors should be returned in a ptr,length fashion
@@ -206,13 +195,13 @@ class PmtSection : public PsiSectionCommon
         {
             uint8_t streamType;
             uint16_t pid;
-            uint8_t* descriptor;
+            PsiDescriptor descriptor;
         };
         typedef std::list<StreamInfo> StreamList;
 
     private:
         uint16_t pcrPid;
-        uint8_t* programInfoDescriptor;
+        PsiDescriptor programInfoDescriptor;
         StreamList streamList;
 
         void onComplete();
@@ -226,7 +215,7 @@ class PmtSection : public PsiSectionCommon
 
         uint16_t getProgramNumber();
         uint16_t getPcrPid();
-        uint8_t* getProgramInfoDescriptor();
+        const PsiDescriptor& getProgramInfoDescriptor();
         const StreamList& getStreamList();
 };
 
@@ -251,7 +240,7 @@ class PmtSection : public PsiSectionCommon
 #define PSI_GET_SECTION_NUMBER(x)       (x->byte6)
 #define PSI_GET_LAST_SECTION_NUMBER(x)  (x->byte7)
 
-#define PSI_HEADER_START                ((PsiSection::PsiSectionHeader*)start)
+#define PSI_HEADER_START                ((ByteField*)start)
 
 #define PAT_PROG_NUMBER_SHIFT           8
 #define PAT_PID_MASK                    0x1FFF
@@ -259,7 +248,23 @@ class PmtSection : public PsiSectionCommon
 
 #define PAT_GET_PROG_NUMBER(x)          (((x->byte0) << PAT_PROG_NUMBER_SHIFT) | (x->byte1))
 #define PAT_GET_PID(x)                  (((x->byte2 << PAT_PROG_NUMBER_SHIFT) | (x->byte3)) & PAT_PID_MASK)
-#define PAT_PROG_INFO_START             ((PatSection::PatProgramInfo*)(start + offset))
+#define PAT_PROG_INFO_START             ((ByteField*)(start + offset))
+
+#define PMT_PCR_PID_MASK                0x1FFF
+#define PMT_PCR_PID_SHIFT               8
+#define PMT_PIL_MASK                    0x0FFF
+#define PMT_PIL_SHIFT                   8
+#define PMT_ES_PID_MASK                 0x1FFF
+#define PMT_ES_PID_SHIFT                8
+#define PMT_EIL_MASK                    0x0FFF
+#define PMT_EIL_SHIFT                   8
+
+#define PMT_GET_PCR_PID(x)              (((x->byte0 << PMT_PCR_PID_SHIFT) | (x->byte1)) & PMT_PCR_PID_MASK)
+#define PMT_GET_PROG_INFO_LENGTH(x)     (((x->byte2 << PMT_PIL_SHIFT) | (x->byte3)) & PMT_PIL_MASK)
+#define PMT_GET_STREAM_TYPE(x)          (x->byte0)
+#define PMT_GET_ES_PID(x)               (((x->byte1 << PMT_ES_PID_SHIFT) | (x->byte2)) & PMT_ES_PID_MASK)
+#define PMT_GET_ES_INFO_LENGTH(x)       (((x->byte3 << PMT_EIL_SHIFT) | (x->byte4)) & PMT_EIL_MASK)
+
 
 inline uint8_t PsiSection::getPointerField()
 {
@@ -303,7 +308,7 @@ inline uint8_t PsiSection::getLastSectionNumber()
 
 inline uint8_t* PsiSection::getData()
 {
-    return start + sizeof(struct PsiSectionHeader);
+    return start + 8;
 }
 
 inline bool PsiSectionCommon::isCompleteSection()
@@ -356,7 +361,7 @@ inline uint16_t PmtSection::getPcrPid()
     return pcrPid;
 }
 
-inline uint8_t* PmtSection::getProgramInfoDescriptor()
+inline const PsiDescriptor& PmtSection::getProgramInfoDescriptor()
 {
     return programInfoDescriptor;
 }
@@ -364,6 +369,21 @@ inline uint8_t* PmtSection::getProgramInfoDescriptor()
 inline const PmtSection::StreamList& PmtSection::getStreamList()
 {
     return streamList;
+}
+
+inline void CatSection::parse(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_CAT);
+}
+
+inline void CatSection::append(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_CAT);
+}
+
+inline const PsiDescriptor& CatSection::getDescriptor()
+{
+    return descriptor;
 }
 
 #endif

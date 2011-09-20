@@ -1,5 +1,5 @@
 #
-#   Makefile - Root level makefile for delphinus
+#   Makefile - Makefile for common
 #
 #   This file is part of delphinus - a stream analyzer for various multimedia
 #   stream formats and containers.
@@ -21,8 +21,13 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-BASE_DIR := .
-PRE_REQS := tsinfo
+BASE_DIR := ..
+
+include $(BASE_DIR)/tools/toolchain.mk
+BUILD_ARCHS := $(ALL_ARCHS)
+
+EXPORT_HEADERS_PREFIX_DIR := common
+EXPORT_HEADERS := DelphinusUtils.h
 
 include $(BASE_DIR)/tools/makesystem.mk
 

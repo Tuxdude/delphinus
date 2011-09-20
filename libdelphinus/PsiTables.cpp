@@ -86,12 +86,12 @@ void PsiSectionCommon::parse(uint8_t* data, uint16_t size, uint8_t tableId)
     data += *data + 1;
     // Subtract the number of bytes lost in the header - we dont store
     // the section header
-    sectionLength = PSI_GET_LENGTH(((PsiSection::PsiSectionHeader*)data)) - 5;
-    tableIdExtension = PSI_GET_TABLE_ID_EXTN(((PsiSection::PsiSectionHeader*)data));
-    currentSection = PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
-    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+    sectionLength = PSI_GET_LENGTH(((ByteField*)data)) - 5;
+    tableIdExtension = PSI_GET_TABLE_ID_EXTN(((ByteField*)data));
+    currentSection = PSI_GET_SECTION_NUMBER(((ByteField*)data));
+    lastSection = PSI_GET_LAST_SECTION_NUMBER(((ByteField*)data));
 
-    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == tableId);
+    assert(PSI_GET_TABLE_ID(((ByteField*)data)) == tableId);
     assert(currentSection == 0);
 
     start = new uint8_t[sectionLength];
@@ -114,10 +114,10 @@ void PsiSectionCommon::append(uint8_t* data, uint16_t size, uint8_t tableId)
     // Verify that the section is already not complete
     assert(!isComplete && currentSection < lastSection);
 
-    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
-    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == tableId);
-    assert(PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == currentSection + 1);
-    assert(PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == lastSection);
+    lastSection = PSI_GET_LAST_SECTION_NUMBER(((ByteField*)data));
+    assert(PSI_GET_TABLE_ID(((ByteField*)data)) == tableId);
+    assert(PSI_GET_SECTION_NUMBER(((ByteField*)data)) == currentSection + 1);
+    assert(PSI_GET_LAST_SECTION_NUMBER(((ByteField*)data)) == lastSection);
     ++currentSection;
 
     // Copy the minimum of the available data size and the section length,
@@ -142,8 +142,8 @@ void PatSection::onComplete()
     ProgramInfo info;
     while (remainingData > 4)
     {
-        info.programNumber = PAT_GET_PROG_NUMBER(((PatSection::PatProgramInfo*)data));
-        info.pmtPid = PAT_GET_PID(((PatSection::PatProgramInfo*)data));
+        info.programNumber = PAT_GET_PROG_NUMBER(((ByteField*)data));
+        info.pmtPid = PAT_GET_PID(((ByteField*)data));
         programList.push_back(info);
         data += 4;
         remainingData -= 4;
@@ -166,9 +166,10 @@ void PmtSection::onComplete()
 }
 
 PmtSection::PmtSection()
-    :   pcrPid(0x1FFF),
-        programInfoDescriptor(NULL)
+    :   pcrPid(0x1FFF)
 {
+    programInfoDescriptor.start = NULL;
+    programInfoDescriptor.size = 0;
 }
 
 PmtSection::~PmtSection()
@@ -177,6 +178,8 @@ PmtSection::~PmtSection()
 
 CatSection::CatSection()
 {
+    descriptor.start = NULL;
+    descriptor.size = 0;
 }
 
 CatSection::~CatSection()
@@ -185,7 +188,9 @@ CatSection::~CatSection()
 
 void CatSection::onComplete()
 {
-    // TODO:
-    // Parsing the CAT info
+    // Store the CA descriptor details
+    descriptor.start = start;
+    // Subtract the size of the CRC_32
+    descriptor.size = sectionLength -4;
 }
 

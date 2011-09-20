@@ -26,7 +26,7 @@ sources := Ts.cpp Pes.cpp PsiTables.cpp TsFile.cpp
 BASE_DIR := ..
 
 include $(BASE_DIR)/tools/toolchain.mk
-BUILD_ARCHS := $(ARCH_HOST) $(ARCH_MINGW_W32) $(ARCH_MINGW_W64)
+BUILD_ARCHS := $(ALL_ARCHS)
 
 objs = $(addprefix $(ARCH)/,$(sources:.cpp=.o))
 
@@ -35,6 +35,7 @@ TARGET = $(ARCH)/libdelphinus.so
 EXPORT_HEADERS_PREFIX_DIR := libdelphinus
 EXPORT_HEADERS := Ts.h TsFile.h Pes.h PsiTables.h
 EXPORT_LIBS = $(TARGET)
+PRE_REQS := common
 
 ifneq ($(ARCH),$(ARCH_HOST))
     TARGET = $(ARCH)/libdelphinus.dll

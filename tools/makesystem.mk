@@ -56,14 +56,13 @@ define ExecWithMsg
 endef
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
-EXPORT_TRIGGER := .export
 EXPORTS_DIR := $(BASE_DIR)/dist
 EXPORT_RELEASES_DIR := $(EXPORTS_DIR)/release
 
 # Remove duplicates in BUILD_ARCHS
 BUILD_ARCHS := $(sort $(BUILD_ARCHS))
 # Remove any archs not supported
-BUILD_ARCHS := $(filter $(ARCHS),$(BUILD_ARCHS))
+BUILD_ARCHS := $(filter $(ALL_ARCHS),$(BUILD_ARCHS))
 
 # Make sure all is the first target
 all:
@@ -72,15 +71,16 @@ ifneq ($(ARCH),)
 # When ARCH is set
 
 # Setting up exports dir
-EXPORT_HEADERS_BASE_DIR = $(EXPORTS_DIR)/$(ARCH)/include
+EXPORT_TRIGGER := .export_$(ARCH)
+EXPORT_HEADERS_BASE_DIR := $(EXPORTS_DIR)/$(ARCH)/include
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
-    EXPORT_HEADERS_DIR = $(EXPORT_HEADERS_BASE_DIR)/$(EXPORT_HEADERS_PREFIX_DIR)
-    REMOVE_EXPORT_HEADERS_PREFIX_DIR = $(RMDIR) $(EXPORT_HEADERS_DIR)
+    EXPORT_HEADERS_DIR := $(EXPORT_HEADERS_BASE_DIR)/$(EXPORT_HEADERS_PREFIX_DIR)
+    REMOVE_EXPORT_HEADERS_PREFIX_DIR := $(RM_RECURSIVE) $(EXPORT_HEADERS_DIR)
 else
     EXPORT_HEADERS_DIR = $(EXPORT_HEADERS_BASE_DIR)
 endif
-EXPORT_LIBS_DIR = $(EXPORTS_DIR)/$(ARCH)/lib
-EXPORT_BINS_DIR = $(EXPORTS_DIR)/$(ARCH)/bin
+EXPORT_LIBS_DIR := $(EXPORTS_DIR)/$(ARCH)/lib
+EXPORT_BINS_DIR := $(EXPORTS_DIR)/$(ARCH)/bin
 
 # Now choose the toolchain and architecture specific flags based on ARCH
 ARCH_FLAGS :=
@@ -129,16 +129,16 @@ WARN_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strin
     -Wmissing-include-dirs -Wshadow -Wwrite-strings
 WARN_C_FLAGS := -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
 COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
-INCPATH = -I. -I$(EXPORT_HEADERS_BASE_DIR)
+INCPATH := -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
-CFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
+CFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
 CFLAGS += -std=gnu99
-CXXFLAGS = $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
-CPPFLAGS = $(INCPATH)
-LDFLAGS = -Wl,-O3 -Wl-z,defs
+CXXFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
+CPPFLAGS := $(INCPATH)
+LDFLAGS := -Wl,-O3 -Wl-z,defs
 LDFLAGS += -L$(EXPORT_LIBS_DIR)
 
-LINKER = $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))
+LINKER := $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))
 LDARGS = -o $@ $(filter %.o,$^) $(LDFLAGS) $(LINKMAP)
 LDARGS += $(if $(findstring $(CC), $(LINKER)),$(CFLAGS),$(CXXFLAGS))
 
@@ -172,14 +172,13 @@ ifneq ($(EXPORT_ALL_CMD),)
 endif
 
 # Build and dependecy directories
-BUILD_DIR = $(ARCH)
-DEP_DIR = $(BUILD_DIR)/.dep
+BUILD_DIR := $(ARCH)
+DEP_DIR := $(BUILD_DIR)/.dep
 
 # Clean-up files and directories
 CLEANUP_FILES += $(BUILD_DIR) $(EXPORTED_FILES)
 
 # Set up exporting files
-ifneq ($(TARGET),)
 ifneq ($(EXPORT_DIST),)
 local_all: $(EXPORT_TRIGGER)
 
@@ -188,9 +187,16 @@ $(EXPORT_TRIGGER): $(TARGET)
 	$(silent)$(TOUCH) $@
 
 CLEANUP_FILES += $(EXPORT_TRIGGER)
+
+# Exports should happen even if no target is defined which should
+# already be handled by the above rule, but re-export (without a clean)
+# wont happen if any of the dependencies are modified. The following rule
+# should fix this problem
+ifeq ($(TARGET),)
+$(EXPORT_TRIGGER): $(EXPORT_HEADERS) $(EXPORT_BINS) $(EXPORT_LIBS)
+endif
 else
 all: $(TARGET)
-endif
 endif
 
 # Handle header file dependecies
@@ -262,8 +268,8 @@ $(shell $(MKDIR) $(DIRS_TO_CREATE))
 BUILD_DIRS := $(BUILD_ARCHS)
 DEP_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(build_arch)/.dep)
 
-__local_all_archs = $(foreach build_arch,$(BUILD_ARCHS),.local_all__$(build_arch))
-__local_clean_archs = $(foreach build_arch,$(BUILD_ARCHS),.local_clean__$(build_arch))
+__local_all_archs := $(foreach build_arch,$(BUILD_ARCHS),.local_all__$(build_arch))
+__local_clean_archs := $(foreach build_arch,$(BUILD_ARCHS),.local_clean__$(build_arch))
 
 local_all: $(__local_all_archs)
 
@@ -292,7 +298,7 @@ all: .prereqs
 
 clean:
 	$(silent)for dir in $(PRE_REQS);\
-	    do $(MAKE) -C $(BASE_DIR)/$${dir} local_clean;\
+	    do $(MAKE) -C $(BASE_DIR)/$${dir} distclean;\
             if [ $$? -ne 0 ]; then exit 1; fi\
 	    done
 

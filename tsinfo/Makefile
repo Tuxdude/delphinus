@@ -22,10 +22,9 @@
 #
 
 BASE_DIR := ..
-BUILD_DIR := ./build
 
 include $(BASE_DIR)/tools/toolchain.mk
-BUILD_ARCHS := $(ARCH_HOST) $(ARCH_MINGW_W32) $(ARCH_MINGW_W64)
+BUILD_ARCHS := $(ALL_ARCHS)
 
 sources := tsinfo.cpp
 objs := $(addprefix $(ARCH)/,$(sources:.cpp=.o))

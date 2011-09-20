@@ -24,7 +24,7 @@
 
 #ifndef DELPHINUS_PES_H
 #define DELPHINUS_PES_H
-#include <inttypes.h>
+#include "common/DelphinusUtils.h"
 
 class PesPacket
 {
@@ -54,15 +54,6 @@ class PesPacket
             STREAM_ID_PROGRAM_STREAM_DIR = 0xFF
         };
     private:
-        struct PesHeader
-        {
-            uint8_t byte0;
-            uint8_t byte1;
-            uint8_t byte2;
-            uint8_t byte3;
-            uint8_t byte4;
-            uint8_t byte5;
-        };
         bool isPes;
         uint8_t* start;
 
@@ -97,7 +88,7 @@ class PesPacket
 #define PES_GET_LENGTH(x)               ((x->byte4 << PES_LENGTH_SHIFT) |\
                                          (x->byte5))
 
-#define PES_HEADER_START ((PesHeader*)(start))
+#define PES_HEADER_START ((ByteField*)(start))
 
 inline bool PesPacket::isValid()
 {
