@@ -24,6 +24,7 @@
 
 #include "libdelphinus/TsFile.h"
 #include "libdelphinus/Pes.h"
+#include "libdelphinus/PsiTables.h"
 #include <inttypes.h>
 
 #define DEBUG
@@ -71,30 +72,46 @@ int main(int argc, char* argv[])
     TsPacket* tsPacket = NULL;
     tsPacket = tsFile.viewPacketByNumber(0);
     PesPacket pesPacket;
-    while (packetCount < 500)
+    while (packetCount < 50000)
     {
         uint16_t pid = tsPacket->getPid();
 //        MSG("PID: 0x%03x", pid);
         if (pid != TsPacket::PID_NULL)
         {
-            MSG("Packet: %" PRId64 "", packetCount);
-            MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
-            MSG("TEI: 0x%01x", tsPacket->getTransportErrorIndicator());
-            MSG("PUSI: 0x%01x", tsPacket->getPayloadUnitStartIndicator());
-            MSG("Transport Priority: 0x%01x", tsPacket->getTransportPriority());
-            MSG("PID: 0x%03x", pid);
-            MSG("Scrambling Control: 0x%01x", tsPacket->getTransportScramblingControl());
-            MSG("Adaptation Field Control: 0x%01x", tsPacket->getAdaptationFieldControl());
-            MSG("Continuity Counter: 0x%01x", tsPacket->getContinuityCounter());
-            if (tsPacket->hasPayload())
+//            MSG("Packet: %" PRId64 "", packetCount);
+//            MSG("Sync byte: 0x%02x", tsPacket->getSyncByte());
+//            MSG("TEI: 0x%01x", tsPacket->getTransportErrorIndicator());
+//            MSG("PUSI: 0x%01x", tsPacket->getPayloadUnitStartIndicator());
+//            MSG("Transport Priority: 0x%01x", tsPacket->getTransportPriority());
+//            MSG("PID: 0x%03x", pid);
+//            MSG("Scrambling Control: 0x%01x", tsPacket->getTransportScramblingControl());
+//            MSG("Adaptation Field Control: 0x%01x", tsPacket->getAdaptationFieldControl());
+//            MSG("Continuity Counter: 0x%01x", tsPacket->getContinuityCounter());
+            if (tsPacket->hasPayload() && tsPacket->getPayloadUnitStartIndicator())
             {
                 pesPacket.parse(tsPacket->getPayload());
-                MSG("hasAdaptation: %d PES Start Code: 0x%08x",
-                    tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());
-                MSG("streamId: 0x%02x", pesPacket.getStreamId());
-                MSG("PES packet length: 0x%02x", pesPacket.getLength());
+                if (pesPacket.getStartCodePrefix() != 0x000001)
+                {
+                    // It must be a section
+                    PsiSection psiSection;
+                    psiSection.parse(tsPacket->getPayload());
+                    if (psiSection.parse(tsPacket->getPayload()) &&
+                        psiSection.getSectionNumber() != psiSection.getLastSectionNumber())
+                    {
+                        MSG("Packet: %" PRId64 "", packetCount);
+                        MSG("PID: 0x%03x", pid);
+                        MSG("Table Id: 0x%02x", psiSection.getTableId());
+                        MSG("Pointer field: 0x%02x", psiSection.getPointerField());
+                        MSG("Section length: 0x%03x", psiSection.getLength());
+                        MSG("-----------------------------------------------------------");
+                    }
+                }
+//                MSG("hasAdaptation: %d PES Start Code: 0x%08x",
+//                    tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());
+//                MSG("streamId: 0x%02x", pesPacket.getStreamId());
+//                MSG("PES packet length: 0x%02x", pesPacket.getLength());
             }
-            MSG("-----------------------------------------------------------");
+//            MSG("-----------------------------------------------------------");
         }
         tsPacket = tsFile.viewNextPacket();
         ++packetCount;

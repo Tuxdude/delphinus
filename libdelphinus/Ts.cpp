@@ -49,9 +49,9 @@ TsPacket::TsPacket()
 
 TsPacket::~TsPacket()
 {
-    if (isMemoryAllocated)
+    if (isMemoryAllocated && start)
     {
-        delete start;
+        delete[] start;
     }
 }
 

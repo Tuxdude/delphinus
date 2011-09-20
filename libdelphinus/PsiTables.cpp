@@ -38,14 +38,16 @@ PsiSection::~PsiSection()
 {
 }
 
-inline bool PsiSection::parse(uint8_t* data)
+bool PsiSection::parse(uint8_t* data)
 {
     // The first byte to parse should is the pointer field
     // giving the offset to where the section data starts
-    pointerField = *data;
+    pointerField = *data + 1;
     start = data + pointerField;
     return (PSI_GET_SSI(PSI_HEADER_START) == 1 &&
-            PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0);
+            PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0 &&
+            PSI_GET_TABLE_ID(PSI_HEADER_START) != 0xFF &&
+            PSI_GET_LENGTH(PSI_HEADER_START) < 0x3FD);
 }
 
 void PatSection::parsePrograms()
@@ -67,7 +69,7 @@ void PatSection::clear()
 {
     if (start)
     {
-        delete start;
+        delete[] start;
         start = NULL;
     }
     isComplete = false;

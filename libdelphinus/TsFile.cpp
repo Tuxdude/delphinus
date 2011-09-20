@@ -130,16 +130,16 @@ TsFile::TsFile()
 
 TsFile::~TsFile()
 {
-    close();
-    if (buffer)
-    {
-        delete buffer;
-        buffer = NULL;
-    }
     if (viewPacket)
     {
         delete viewPacket;
         viewPacket = NULL;
+    }
+    close();
+    if (buffer)
+    {
+        delete[] buffer;
+        buffer = NULL;
     }
 }
 
