@@ -108,10 +108,13 @@ class PsiSectionCommon
 
         PsiSectionCommon();
         virtual ~PsiSectionCommon();
-        void clear();
         virtual void onComplete() = 0;
         void parse(uint8_t* data, uint16_t size, uint8_t tableId);
         void append(uint8_t* data, uint16_t size, uint8_t tableId);
+
+    public:
+        void clear();
+        bool isCompleteSection();
 };
 
 class PatSection : public PsiSectionCommon
@@ -141,10 +144,8 @@ class PatSection : public PsiSectionCommon
         PatSection();
         ~PatSection();
 
-        void clear();
         void parse(uint8_t* data, uint16_t size);
         void append(uint8_t* data, uint16_t size);
-        bool isCompleteSection();
 
         uint16_t getTransportStreamId();
         const ProgramList& getPrograms();
@@ -156,11 +157,15 @@ class CatSection : public PsiSectionCommon
     private:
         uint8_t* start;
 
+        void onComplete();
+
     public:
         CatSection();
         ~CatSection();
 
-        void parse(uint8_t* data);
+        void parse(uint8_t* data, uint16_t size);
+        void append(uint8_t* data, uint16_t size);
+
         uint8_t* getDescriptor();
 };
 
@@ -216,10 +221,8 @@ class PmtSection : public PsiSectionCommon
         PmtSection();
         ~PmtSection();
 
-        void clear();
         void parse(uint8_t* data, uint16_t size);
         void append(uint8_t* data, uint16_t size);
-        bool isCompleteSection();
 
         uint16_t getProgramNumber();
         uint16_t getPcrPid();
@@ -303,9 +306,9 @@ inline uint8_t* PsiSection::getData()
     return start + sizeof(struct PsiSectionHeader);
 }
 
-inline void PatSection::clear()
+inline bool PsiSectionCommon::isCompleteSection()
 {
-    this->PsiSectionCommon::clear();
+    return isComplete;
 }
 
 inline void PatSection::parse(uint8_t* data, uint16_t size)
@@ -316,11 +319,6 @@ inline void PatSection::parse(uint8_t* data, uint16_t size)
 inline void PatSection::append(uint8_t* data, uint16_t size)
 {
     this->PsiSectionCommon::append(data, size, PsiSection::TABLE_PAT);
-}
-
-inline bool PatSection::isCompleteSection()
-{
-    return isComplete;
 }
 
 inline uint16_t PatSection::getTransportStreamId()
@@ -336,11 +334,6 @@ inline const PatSection::ProgramList& PatSection::getPrograms()
 inline uint16_t PatSection::getNetworkPid()
 {
     return networkPid;
-}
-
-inline void PmtSection::clear()
-{
-    this->PsiSectionCommon::clear();
 }
 
 inline void PmtSection::parse(uint8_t* data, uint16_t size)

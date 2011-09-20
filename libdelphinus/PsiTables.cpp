@@ -175,3 +175,17 @@ PmtSection::~PmtSection()
 {
 }
 
+CatSection::CatSection()
+{
+}
+
+CatSection::~CatSection()
+{
+}
+
+void CatSection::onComplete()
+{
+    // TODO:
+    // Parsing the CAT info
+}
+
