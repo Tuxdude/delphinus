@@ -228,7 +228,7 @@ class PmtSection
 #define PSI_GET_SECTION_NUMBER(x)       (x->byte6)
 #define PSI_GET_LAST_SECTION_NUMBER(x)  (x->byte7)
 
-#define PSI_HEADER_START                ((PsiSection::PsiSectionHeader*)(start))
+#define PSI_HEADER_START                ((PsiSection::PsiSectionHeader*)start)
 
 #define PAT_PROG_NUMBER_SHIFT           8
 #define PAT_PID_MASK                    0x1FFF
@@ -236,6 +236,7 @@ class PmtSection
 
 #define PAT_GET_PROG_NUMBER(x)          (((x->byte0) << PAT_PROG_NUMBER_SHIFT) | (x->byte1))
 #define PAT_GET_PID(x)                  (((x->byte2 << PAT_PROG_NUMBER_SHIFT) | (x->byte3)) & PAT_PID_MASK)
+#define PAT_PROG_INFO_START             ((PatSection::PatProgramInfo*)(start + offset))
 
 inline uint8_t PsiSection::getPointerField()
 {

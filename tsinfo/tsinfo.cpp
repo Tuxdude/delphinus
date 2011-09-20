@@ -94,7 +94,26 @@ int main(int argc, char* argv[])
                 {
                     // It must be a section
                     PsiSection psiSection;
-                    psiSection.parse(tsPacket->getPayload());
+#if 1
+                    if (psiSection.parse(tsPacket->getPayload()) &&
+                        psiSection.getTableId() == PsiSection::TABLE_PAT)
+                    {
+                        PatSection patSection;
+                        uint16_t dataSize = tsPacket->getPacketSize() - tsPacket->getPayloadOffset() -
+                                            1 - psiSection.getPointerField();
+                        patSection.parse(tsPacket->getPayload(), dataSize);
+                        // We either dont have the complete PAT section yet
+                        // or it is an invalid PAT section
+                        const PatSection::ProgramList& programs = patSection.getPrograms();
+                        for (PatSection::ProgramList::const_iterator ix = programs.begin();
+                             ix != programs.end(); ++ix)
+                        {
+                            MSG("Program Number: 0x%02x PMT PID: 0x%03x",
+                                ix->programNumber, ix->pmtPid);
+                        }
+                    }
+#endif
+#if 0
                     if (psiSection.parse(tsPacket->getPayload()) &&
                         psiSection.getSectionNumber() != psiSection.getLastSectionNumber())
                     {
@@ -105,6 +124,7 @@ int main(int argc, char* argv[])
                         MSG("Section length: 0x%03x", psiSection.getLength());
                         MSG("-----------------------------------------------------------");
                     }
+#endif
                 }
 //                MSG("hasAdaptation: %d PES Start Code: 0x%08x",
 //                    tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());

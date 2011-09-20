@@ -75,6 +75,7 @@ class TsPacket
         bool hasPayload();
         uint8_t getContinuityCounter();
         uint8_t* getAdaptationField();
+        uint8_t getPayloadOffset();
         uint8_t* getPayload();
 };
 
@@ -223,5 +224,10 @@ inline uint8_t* TsPacket::getAdaptationField()
 inline uint8_t* TsPacket::getPayload()
 {
     return (start + payloadOffset);
+}
+
+inline uint8_t TsPacket::getPayloadOffset()
+{
+    return payloadOffset;
 }
 #endif

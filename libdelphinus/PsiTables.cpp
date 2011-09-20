@@ -54,6 +54,18 @@ void PatSection::parsePrograms()
 {
     // TODO: Add code here for parsing the program info
     // from the section
+    uint8_t* data = start;
+    uint16_t remainingData = sectionLength;
+    programList.clear();
+    ProgramInfo info;
+    while (remainingData > 4)
+    {
+        info.programNumber = PAT_GET_PROG_NUMBER(((PatSection::PatProgramInfo*)data));
+        info.pmtPid = PAT_GET_PID(((PatSection::PatProgramInfo*)data));
+        programList.push_back(info);
+        data += 4;
+        remainingData -= 4;
+    }
 }
 
 PatSection::PatSection()
@@ -80,7 +92,10 @@ void PatSection::clear()
 void PatSection::parse(uint8_t* data, uint16_t size)
 {
     clear();
-    sectionLength = PSI_GET_LENGTH(((PsiSection::PsiSectionHeader*)data));
+    // Subtract the number of bytes lost in the header - we dont store
+    // the section header
+    data += *data + 1;
+    sectionLength = PSI_GET_LENGTH(((PsiSection::PsiSectionHeader*)data)) - 5;
     transportStreamId = PSI_GET_TABLE_ID_EXTN(((PsiSection::PsiSectionHeader*)data));
     currentSection = PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
     lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
