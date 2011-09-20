@@ -92,10 +92,29 @@ class PsiSection
         uint8_t getLastSectionNumber();
         uint8_t* getData();
 
-        friend class PatSection;
+        friend class PsiSectionCommon;
 };
 
-class PatSection
+class PsiSectionCommon
+{
+    protected:
+        bool isComplete;
+        uint8_t* start;
+        uint16_t sectionLength;
+        uint16_t tableIdExtension;
+        uint16_t validSize;
+        uint8_t currentSection;
+        uint8_t lastSection;
+
+        PsiSectionCommon();
+        virtual ~PsiSectionCommon();
+        void clear();
+        virtual void onComplete() = 0;
+        void parse(uint8_t* data, uint16_t size, uint8_t tableId);
+        void append(uint8_t* data, uint16_t size, uint8_t tableId);
+};
+
+class PatSection : public PsiSectionCommon
 {
     public:
         struct ProgramInfo
@@ -113,17 +132,10 @@ class PatSection
             uint8_t byte3;
         };
 
-        bool isComplete;
         ProgramList programList;
-        uint16_t sectionLength;
-        uint16_t transportStreamId;
         uint16_t networkPid;
-        uint8_t* start;
-        uint16_t validSize;
-        uint8_t currentSection;
-        uint8_t lastSection;
 
-        void parsePrograms();
+        void onComplete();
 
     public:
         PatSection();
@@ -139,7 +151,7 @@ class PatSection
         uint16_t getNetworkPid();
 };
 
-class CatSection
+class CatSection : public PsiSectionCommon
 {
     private:
         uint8_t* start;
@@ -154,7 +166,7 @@ class CatSection
 
 // FIXME: All descriptors should be returned in a ptr,length fashion
 
-class PmtSection
+class PmtSection : public PsiSectionCommon
 {
     public:
         enum
@@ -194,17 +206,25 @@ class PmtSection
         typedef std::list<StreamInfo> StreamList;
 
     private:
-        uint8_t* start;
+        uint16_t pcrPid;
+        uint8_t* programInfoDescriptor;
+        StreamList streamList;
+
+        void onComplete();
 
     public:
         PmtSection();
         ~PmtSection();
 
-        void parse(uint8_t* data);
+        void clear();
+        void parse(uint8_t* data, uint16_t size);
+        void append(uint8_t* data, uint16_t size);
+        bool isCompleteSection();
+
         uint16_t getProgramNumber();
         uint16_t getPcrPid();
         uint8_t* getProgramInfoDescriptor();
-        void getStreamList(StreamList& streamList);
+        const StreamList& getStreamList();
 };
 
 #define PSI_SSI_SHIFT                   7
@@ -283,6 +303,21 @@ inline uint8_t* PsiSection::getData()
     return start + sizeof(struct PsiSectionHeader);
 }
 
+inline void PatSection::clear()
+{
+    this->PsiSectionCommon::clear();
+}
+
+inline void PatSection::parse(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_PAT);
+}
+
+inline void PatSection::append(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_PAT);
+}
+
 inline bool PatSection::isCompleteSection()
 {
     return isComplete;
@@ -290,7 +325,7 @@ inline bool PatSection::isCompleteSection()
 
 inline uint16_t PatSection::getTransportStreamId()
 {
-    return transportStreamId;
+    return tableIdExtension;
 }
 
 inline const PatSection::ProgramList& PatSection::getPrograms()
@@ -303,5 +338,39 @@ inline uint16_t PatSection::getNetworkPid()
     return networkPid;
 }
 
+inline void PmtSection::clear()
+{
+    this->PsiSectionCommon::clear();
+}
+
+inline void PmtSection::parse(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_PMT);
+}
+
+inline void PmtSection::append(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_PMT);
+}
+
+inline uint16_t PmtSection::getProgramNumber()
+{
+    return tableIdExtension;
+}
+
+inline uint16_t PmtSection::getPcrPid()
+{
+    return pcrPid;
+}
+
+inline uint8_t* PmtSection::getProgramInfoDescriptor()
+{
+    return programInfoDescriptor;
+}
+
+inline const PmtSection::StreamList& PmtSection::getStreamList()
+{
+    return streamList;
+}
 
 #endif

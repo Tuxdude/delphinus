@@ -30,7 +30,8 @@
 #define GET_LESS(x, y) ((x) < (y) ? (x) : (y))
 
 PsiSection::PsiSection()
-    : start(NULL)
+    :   start(NULL),
+        pointerField(0)
 {
 }
 
@@ -50,10 +51,91 @@ bool PsiSection::parse(uint8_t* data)
             PSI_GET_LENGTH(PSI_HEADER_START) < 0x3FD);
 }
 
-void PatSection::parsePrograms()
+PsiSectionCommon::PsiSectionCommon()
+    :   isComplete(false),
+        start(NULL),
+        sectionLength(0),
+        tableIdExtension(0),
+        validSize(0),
+        currentSection(0),
+        lastSection(0)
+        
 {
-    // TODO: Add code here for parsing the program info
-    // from the section
+}
+
+PsiSectionCommon::~PsiSectionCommon()
+{
+}
+
+void PsiSectionCommon::clear()
+{
+    if (start)
+    {
+        delete[] start;
+        start = NULL;
+    }
+    isComplete = false;
+    sectionLength = 0;
+    validSize = 0;
+}
+
+void PsiSectionCommon::parse(uint8_t* data, uint16_t size, uint8_t tableId)
+{
+    clear();
+    // Dont include the pointer field
+    data += *data + 1;
+    // Subtract the number of bytes lost in the header - we dont store
+    // the section header
+    sectionLength = PSI_GET_LENGTH(((PsiSection::PsiSectionHeader*)data)) - 5;
+    tableIdExtension = PSI_GET_TABLE_ID_EXTN(((PsiSection::PsiSectionHeader*)data));
+    currentSection = PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+
+    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == tableId);
+    assert(currentSection == 0);
+
+    start = new uint8_t[sectionLength];
+    // Copy the minimum of the available data size and the section length,
+    // since there is no use copying padding bytes 0xFF
+    uint16_t copyingSize = GET_LESS(size - 8, sectionLength);
+    memcpy(start, data + 8, copyingSize);
+    validSize = copyingSize;
+
+    if (lastSection == currentSection)
+    {
+        assert(sectionLength == validSize);
+        isComplete = true;
+        onComplete();
+    }
+}
+
+void PsiSectionCommon::append(uint8_t* data, uint16_t size, uint8_t tableId)
+{
+    // Verify that the section is already not complete
+    assert(!isComplete && currentSection < lastSection);
+
+    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
+    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == tableId);
+    assert(PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == currentSection + 1);
+    assert(PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == lastSection);
+    ++currentSection;
+
+    // Copy the minimum of the available data size and the section length,
+    // since there is no use copying padding bytes 0xFF
+    uint16_t copyingSize = GET_LESS(size - 8, sectionLength - validSize);
+    memcpy(start + validSize, data + 8, copyingSize);
+    validSize += copyingSize;
+    if (lastSection == currentSection)
+    {
+        assert(sectionLength == validSize);
+        isComplete = true;
+        onComplete();
+    }
+}
+
+void PatSection::onComplete()
+{
+    // Parsing the program info from the section
     uint8_t* data = start;
     uint16_t remainingData = sectionLength;
     programList.clear();
@@ -69,7 +151,7 @@ void PatSection::parsePrograms()
 }
 
 PatSection::PatSection()
-    : start(NULL)
+    :   networkPid(0x1FFF)
 {
 }
 
@@ -77,58 +159,19 @@ PatSection::~PatSection()
 {
 }
 
-void PatSection::clear()
+void PmtSection::onComplete()
 {
-    if (start)
-    {
-        delete[] start;
-        start = NULL;
-    }
-    isComplete = false;
-    sectionLength = 0;
-    validSize = 0;
+    // TODO:
+    // Parsing the PMT info
 }
 
-void PatSection::parse(uint8_t* data, uint16_t size)
+PmtSection::PmtSection()
+    :   pcrPid(0x1FFF),
+        programInfoDescriptor(NULL)
 {
-    clear();
-    // Subtract the number of bytes lost in the header - we dont store
-    // the section header
-    data += *data + 1;
-    sectionLength = PSI_GET_LENGTH(((PsiSection::PsiSectionHeader*)data)) - 5;
-    transportStreamId = PSI_GET_TABLE_ID_EXTN(((PsiSection::PsiSectionHeader*)data));
-    currentSection = PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
-    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
-    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == PsiSection::TABLE_PAT);
-    assert(currentSection == 0);
-    start = new uint8_t[sectionLength];
-    uint16_t copyingSize = GET_LESS(size - 8, sectionLength);
-    memcpy(start, data + 8, copyingSize);
-    validSize = copyingSize;
-    if (lastSection == currentSection)
-    {
-        assert(sectionLength == validSize);
-        isComplete = true;
-        parsePrograms();
-    }
 }
 
-void PatSection::append(uint8_t* data, uint16_t size)
+PmtSection::~PmtSection()
 {
-    assert(!isComplete && currentSection < lastSection);
-    lastSection = PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data));
-    assert(PSI_GET_TABLE_ID(((PsiSection::PsiSectionHeader*)data)) == PsiSection::TABLE_PAT);
-    assert(PSI_GET_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == currentSection + 1);
-    assert(PSI_GET_LAST_SECTION_NUMBER(((PsiSection::PsiSectionHeader*)data)) == lastSection);
-    ++currentSection;
-    uint16_t copyingSize = GET_LESS(size - 8, sectionLength - validSize);
-    memcpy(start + validSize, data + 8, copyingSize);
-    validSize += copyingSize;
-    if (lastSection == currentSection)
-    {
-        assert(sectionLength == validSize);
-        isComplete = true;
-        parsePrograms();
-    }
 }
 
