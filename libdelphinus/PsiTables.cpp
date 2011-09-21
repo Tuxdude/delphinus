@@ -270,8 +270,10 @@ const char* PmtSection::getStreamTypeStr(uint8_t streamType)
             return "SDDS Audio";
         case STREAM_TYPE_MSCODEC_VIDEO:
             return "MSCODEC Video";
-        case STREAM_TYPE_VC_1:
-            return "Private ES (VC-1)";
+        case STREAM_TYPE_VC_1_AP:
+            return "VC-1 Advanced profile Video";
+        case STREAM_TYPE_VC_1_SMP:
+            return "VC-1 Simple/Main Profile Video";
         default:
             {
                 if (streamType >= STREAM_TYPE_USER_PRIVATE_START)

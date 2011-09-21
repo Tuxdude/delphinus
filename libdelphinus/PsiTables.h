@@ -212,7 +212,10 @@ class PmtSection : public PsiSectionCommon
             STREAM_TYPE_E_AC3_SECONDARY_AUDIO           = 0xA1,
             // BD DTS-HD secondary audio
             STREAM_TYPE_DTS_HD_SECONDARY_AUDIO          = 0xA2,
-            STREAM_TYPE_VC_1                            = 0xEA,
+            // VC-1 advanced profile
+            STREAM_TYPE_VC_1_AP                         = 0xEA,
+            // VC-1 Simple and main profile
+            STREAM_TYPE_VC_1_SMP                        = 0xEB,
             STREAM_TYPE_13818_1_RESERVED_START          = 0x15,
             STREAM_TYPE_13818_1_RESERVED_END            = 0x7F,
             STREAM_TYPE_USER_PRIVATE_START              = 0x80,
