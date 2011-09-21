@@ -108,6 +108,30 @@ void TsFile::validate()
     isTsFile = true;
 }
 
+void TsFile::collectMetadata()
+{
+    // Approach 1 - Using PID based filtering
+    // Start from packet 0
+    // Check the PID of each packet for PID 0 to find the PAT
+    // Parse the first PAT and find out the PMT PIDs
+    // Scan from the start again to match packets with any of the PMT PIDs
+    // Find all the PMT PIDs and parse the program
+    //
+    // Approach 2 - Using section header's table ID based filtering (more efficient)
+    // Start from packet 0
+    // If all PIDs in PAT and PMT found and PID not in already found list:
+    //      Check for sections when PUSI = 1
+    //      If it is a section - check for Table IDs 0x00 and 0x02
+    //      Then parse it - add PID to found list
+    //
+    //  Print out:
+    //  PAT Info:
+    //  PMTs
+    //  Network PID
+    //  Foreach PMT PID - program info:
+    //  PID - stream type - descriptive stream type str
+}
+
 TsFile::TsFile()
     :   
         buffer(NULL),
@@ -155,6 +179,7 @@ bool TsFile::open(const char* fileName)
     lastPacketOffset = fileSize - packetSize;
 
     validate();
+    collectMetadata();
 
     return true;
 }

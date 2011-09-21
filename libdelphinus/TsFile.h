@@ -52,6 +52,7 @@ class TsFile
 
         void readFromOffset(uint64_t offset);
         void validate();
+        void collectMetadata();
 
     public:
         TsFile();
