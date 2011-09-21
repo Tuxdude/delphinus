@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
     TsPacket* tsPacket = NULL;
     tsPacket = tsFile.viewPacketByNumber(0);
     PesPacket pesPacket;
-    while (packetCount < 50000)
+    while (packetCount < 5000)
     {
         uint16_t pid = tsPacket->getPid();
 //        MSG("PID: 0x%03x", pid);
@@ -102,8 +102,7 @@ int main(int argc, char* argv[])
                         if (psiSection.getTableId() == PsiSection::TABLE_PAT)
                         {
                             PatSection patSection;
-                            uint16_t dataSize = tsPacket->getPacketSize() - tsPacket->getPayloadOffset() -
-                                1 - psiSection.getPointerField();
+                            uint16_t dataSize = tsPacket->getPayloadSize() - psiSection.getDataOffset();
                             patSection.parse(tsPacket->getPayload(), dataSize);
                             if (patSection.isCompleteSection())
                             {
@@ -126,8 +125,7 @@ int main(int argc, char* argv[])
                         else if (psiSection.getTableId() == PsiSection::TABLE_PMT)
                         {
                             PmtSection pmtSection;
-                            uint16_t dataSize = tsPacket->getPacketSize() - tsPacket->getPayloadOffset() -
-                                1 - psiSection.getPointerField();
+                            uint16_t dataSize = tsPacket->getPayloadSize() - psiSection.getDataOffset();
                             pmtSection.parse(tsPacket->getPayload(), dataSize);
                             if (pmtSection.isCompleteSection())
                             {

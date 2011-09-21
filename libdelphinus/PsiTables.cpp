@@ -43,8 +43,8 @@ bool PsiSection::parse(uint8_t* data)
 {
     // The first byte to parse should is the pointer field
     // giving the offset to where the section data starts
-    pointerField = *data + 1;
-    start = data + pointerField;
+    pointerField = *data;
+    start = data + pointerField + 1;
     return (PSI_GET_SSI(PSI_HEADER_START) == 1 &&
             PSI_GET_HARD_ZERO(PSI_HEADER_START) == 0 &&
             PSI_GET_TABLE_ID(PSI_HEADER_START) != 0xFF &&

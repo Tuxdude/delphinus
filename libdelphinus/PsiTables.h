@@ -78,6 +78,7 @@ class PsiSection
         //i.e. the first byte of the payload
         bool parse(uint8_t* data);
         uint8_t getPointerField();
+        uint8_t getDataOffset();
         uint8_t getTableId();
         uint16_t getLength();
         uint16_t getTableIdExtension();
@@ -297,6 +298,11 @@ class PmtSection : public PsiSectionCommon
 inline uint8_t PsiSection::getPointerField()
 {
     return pointerField;
+}
+
+inline uint8_t PsiSection::getDataOffset()
+{
+    return 1 + pointerField;
 }
 
 inline uint8_t PsiSection::getTableId()
