@@ -81,33 +81,31 @@ void TsFile::readFromOffset(uint64_t offset)
 void TsFile::validate()
 {
     readFromOffset(0);
-    TsPacket* tsPacket = new TsPacket();
+    TsPacket tsPacket;
     uint64_t bufferOffset = 0;
     packetSize = 0;
     isTsFile = false;
 
-    if (!tsPacket->parse(buffer + bufferOffset, validBufferSize - bufferOffset))
+    // Validate VALID_PACKETS number of TS packets
+    if (!tsPacket.parse(buffer + bufferOffset, validBufferSize - bufferOffset))
     {
-        delete tsPacket;
         return;
     }
 
-    packetSize = tsPacket->getPacketSize();
+    packetSize = tsPacket.getPacketSize();
     uint64_t maxValidBufferOffset = VALID_PACKETS * packetSize;
     assert (maxValidBufferOffset <= BUFFER_SIZE);
     bufferOffset += packetSize;
 
     while (bufferOffset < maxValidBufferOffset)
     {
-        if (!tsPacket->parse(buffer + bufferOffset, validBufferSize - bufferOffset))
+        if (!tsPacket.parse(buffer + bufferOffset, validBufferSize - bufferOffset))
         {
-            delete tsPacket;
             return;
         }
         bufferOffset += packetSize;
     }
     isTsFile = true;
-    delete tsPacket;
 }
 
 TsFile::TsFile()
