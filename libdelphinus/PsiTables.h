@@ -165,31 +165,57 @@ class PmtSection : public PsiSectionCommon
     public:
         enum
         {
-            STREAM_TYPE_RESERVED                       = 0x00,
-            STREAM_TYPE_11172_VIDEO                    = 0x01,
-            STREAM_TYPE_13818_2_VIDEO                  = 0x02,
-            STREAM_TYPE_11172_AUDIO                    = 0x03,
-            STREAM_TYPE_13818_3_AUDIO                  = 0x04,
-            STREAM_TYPE_13818_1_PRIVATE_SECTIONS       = 0x05,
-            STREAM_TYPE_13818_1_PES_PRIVATE_DATA       = 0x06,
-            STREAM_TYPE_13522_MHEG                     = 0x07,
-            STREAM_TYPE_13818_1_DSMCC                  = 0x08,
-            STREAM_TYPE_H222_1                         = 0x09,
-            STREAM_TYPE_13818_6_TYPE_A                 = 0x0A,
-            STREAM_TYPE_13818_6_TYPE_B                 = 0x0B,
-            STREAM_TYPE_13818_6_TYPE_C                 = 0x0C,
-            STREAM_TYPE_13818_6_TYPE_D                 = 0x0D,
-            STREAM_TYPE_13818_1_AUX                    = 0x0E,
-            STREAM_TYPE_13818_7_AAC_ADTS               = 0x0F,
-            STREAM_TYPE_14496_2_VISUAL                 = 0x10,
-            STREAM_TYPE_14496_3_AAC_LATM               = 0x11,
-            STREAM_TYPE_14496_1_FLEXMUX_PES            = 0x12,
-            STREAM_TYPE_14496_1_FLEXMUX_SECTIONS       = 0x13,
-            STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL = 0x14,
-            STREAM_TYPE_13818_1_RESERVED_START         = 0x15,
-            STREAM_TYPE_13818_1_RESERVED_END           = 0x7F,
-            STREAM_TYPE_USER_PRIVATE_START             = 0x80,
-            STREAM_TYPE_USER_PRIVATE_END               = 0xFF
+            STREAM_TYPE_RESERVED                        = 0x00,
+            STREAM_TYPE_11172_VIDEO                     = 0x01,
+            STREAM_TYPE_13818_2_VIDEO                   = 0x02,
+            STREAM_TYPE_11172_AUDIO                     = 0x03,
+            STREAM_TYPE_13818_3_AUDIO                   = 0x04,
+            STREAM_TYPE_13818_1_PRIVATE_SECTIONS        = 0x05,
+            STREAM_TYPE_13818_1_PES_PRIVATE_DATA        = 0x06,
+            STREAM_TYPE_13522_MHEG                      = 0x07,
+            STREAM_TYPE_13818_1_DSMCC                   = 0x08,
+            STREAM_TYPE_H222_1                          = 0x09,
+            STREAM_TYPE_13818_6_TYPE_A                  = 0x0A,
+            STREAM_TYPE_13818_6_TYPE_B                  = 0x0B,
+            STREAM_TYPE_13818_6_TYPE_C                  = 0x0C,
+            STREAM_TYPE_13818_6_TYPE_D                  = 0x0D,
+            STREAM_TYPE_13818_1_AUX                     = 0x0E,
+            STREAM_TYPE_13818_7_AAC_ADTS                = 0x0F,
+            STREAM_TYPE_14496_2_VIDEO                   = 0x10,
+            STREAM_TYPE_14496_3_AAC_LATM                = 0x11,
+            STREAM_TYPE_14496_1_FLEXMUX_PES             = 0x12,
+            STREAM_TYPE_14496_1_FLEXMUX_SECTIONS        = 0x13,
+            STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL  = 0x14,
+            STREAM_TYPE_14496_10_VIDEO                  = 0x1b,
+            // 0x80 can also be LPCM audio
+            STREAM_TYPE_DC_II_VIDEO                     = 0x80,
+            STREAM_TYPE_A52_AC3_AUDIO                   = 0x81,
+            // 0x82 can also be DVD SPU subtitles
+            STREAM_TYPE_HDMV_DTS_AUDIO                  = 0x82,
+            // 0x83 can be either LPCM or BD TrueHD
+            STREAM_TYPE_LPCM_AUDIO                      = 0x83,
+            // 0x84 can be either SDDS or E-AC-3 audio
+            STREAM_TYPE_SDDS_AUDIO                      = 0x84,
+            // 0x85 can also be DTS HD HR Audio
+            STREAM_TYPE_ATSC_PROGRAM_ID                 = 0x85,
+            STREAM_TYPE_DTS_HD_MASTER_AUDIO             = 0x86,
+            STREAM_TYPE_E_AC3_AUDIO                     = 0x87,
+            STREAM_TYPE_DTS_AUDIO                       = 0x8A,
+            STREAM_TYPE_PGS_SUBTITLE                    = 0x90,
+            // 0x91 can also be BD Interactive Graphics Stream
+            STREAM_TYPE_A52B_AC3_AUDIO                  = 0x91,
+            STREAM_TYPE_DVD_SPU_VLS_SUBTITLE            = 0x92,
+            STREAM_TYPE_SDDS_AUDIO_2                    = 0x94,
+            STREAM_TYPE_MSCODEC_VIDEO                   = 0xA0,
+            // BD E-AC3 secondary audio
+            STREAM_TYPE_E_AC3_SECONDARY_AUDIO           = 0xA1,
+            // BD DTS-HD secondary audio
+            STREAM_TYPE_DTS_HD_SECONDARY_AUDIO          = 0xA2,
+            STREAM_TYPE_VC_1                            = 0xEA,
+            STREAM_TYPE_13818_1_RESERVED_START          = 0x15,
+            STREAM_TYPE_13818_1_RESERVED_END            = 0x7F,
+            STREAM_TYPE_USER_PRIVATE_START              = 0x80,
+            STREAM_TYPE_USER_PRIVATE_END                = 0xFF
         };
         struct StreamInfo
         {

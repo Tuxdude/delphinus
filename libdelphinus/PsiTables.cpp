@@ -203,60 +203,89 @@ const char* PmtSection::getStreamTypeStr(uint8_t streamType)
         case STREAM_TYPE_RESERVED:
             return "ITU-T | ISO/IEC Reserved";
         case STREAM_TYPE_11172_VIDEO:
-            return "ISO/IEC 11172 Video";
+            return "MPEG-1 Video";
         case STREAM_TYPE_13818_2_VIDEO:
-            return "ITU-T Rec. H.262 | ISO/IEC 13818-2 Video or \
-ISO/IEC 11172-2 constrained parameter video stream";
+            return "MPEG-2 Video";
         case STREAM_TYPE_11172_AUDIO:
-            return "ISO/IEC 11172 Audio";
+            return "MPEG-1 Audio";
         case STREAM_TYPE_13818_3_AUDIO:
-            return "ISO/IEC 13818-3 Audio";
+            return "MPEG-2 Audio";
         case STREAM_TYPE_13818_1_PRIVATE_SECTIONS:
-            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 private_sections";
+            return "ISO 13818-1 private_sections";
         case STREAM_TYPE_13818_1_PES_PRIVATE_DATA:
-            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 PES packets containing private data";
+            return "ISO 13818-1 PES packets containing private data";
         case STREAM_TYPE_13522_MHEG:
-            return "ISO/IEC 13522 MHEG";
+            return "ISO 13522 MHEG";
         case STREAM_TYPE_13818_1_DSMCC:
-            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Annex A DSM-CC";
+            return "ISO/IEC 13818-1 DSM-CC";
         case STREAM_TYPE_H222_1:
             return "ITU-T Rec. H.222.1";
         case STREAM_TYPE_13818_6_TYPE_A:
-            return "ISO/IEC 13818-6 type A";
+            return "ISO 13818-6 type A";
         case STREAM_TYPE_13818_6_TYPE_B:
-            return "ISO/IEC 13818-6 type B";
+            return "ISO 13818-6 type B";
         case STREAM_TYPE_13818_6_TYPE_C:
-            return "ISO/IEC 13818-6 type C";
+            return "ISO 13818-6 type C";
         case STREAM_TYPE_13818_6_TYPE_D:
-            return "ISO/IEC 13818-6 type D";
+            return "ISO 13818-6 type D";
         case STREAM_TYPE_13818_1_AUX:
-            return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 auxiliary";
+            return "ISO 13818-1 auxiliary";
         case STREAM_TYPE_13818_7_AAC_ADTS:
-            return "ISO/IEC 13818-7 Audio with ADTS transport syntax";
-        case STREAM_TYPE_14496_2_VISUAL:
-            return "ISO/IEC 14496-2 Visual";
+            return "AAC Audio with ADTS";
+        case STREAM_TYPE_14496_2_VIDEO:
+            return "MPEG-4 Part 2 Video";
         case STREAM_TYPE_14496_3_AAC_LATM:
-            return "ISO/IEC 14496-3 Audio with the LATM transport syntax as defined in ISO/IEC 14496-3 / AMD 1";
+            return "AAC Audio with LATM";
         case STREAM_TYPE_14496_1_FLEXMUX_PES:
-            return "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in PES packets";
+            return "ISO 14496-1 SL-packetized stream or FlexMux stream carried in PES packets";
         case STREAM_TYPE_14496_1_FLEXMUX_SECTIONS:
-            return "ISO/IEC 14496-1 SL-packetized stream or FlexMux stream carried in ISO/IEC14496_sections.";
+            return "ISO 14496-1 SL-packetized stream or FlexMux stream carried in ISO 14496 sections.";
         case STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL:
             return "ISO/IEC 13818-6 Synchronized Download Protocol";
+        case STREAM_TYPE_14496_10_VIDEO:
+            return "H.264 Video";
+        case STREAM_TYPE_DC_II_VIDEO:
+            return "DigiCipher II Video / LPCM Audio";
+        case STREAM_TYPE_A52_AC3_AUDIO:
+            return "A52/AC-3 Audio";
+        case STREAM_TYPE_HDMV_DTS_AUDIO:
+            return "HDMV DTS Audio / DVD SPU subtitles";
+        case STREAM_TYPE_LPCM_AUDIO:
+            return "LPCM Audio / BD TrueHD Audio";
+        case STREAM_TYPE_SDDS_AUDIO:
+            return "SDDS Audio / E-AC-3 Audio";
+        case STREAM_TYPE_ATSC_PROGRAM_ID:
+            return "ATSC Program ID / DTS-HD HR Audio";
+        case STREAM_TYPE_DTS_HD_MASTER_AUDIO:
+            return "DTS-HD Master Audio";
+        case STREAM_TYPE_E_AC3_AUDIO:
+            return "E-AC-3 Audio";
+        case STREAM_TYPE_DTS_AUDIO:
+            return "DTS Audio";
+        case STREAM_TYPE_A52B_AC3_AUDIO:
+            return "A52b/AC-3 Audio / BD Interactive Graphics Stream";
+        case STREAM_TYPE_DVD_SPU_VLS_SUBTITLE:
+            return "SVD_SPU vls Subtitle";
+        case STREAM_TYPE_SDDS_AUDIO_2:
+            return "SDDS Audio";
+        case STREAM_TYPE_MSCODEC_VIDEO:
+            return "MSCODEC Video";
+        case STREAM_TYPE_VC_1:
+            return "Private ES (VC-1)";
         default:
             {
-                if (streamType >= STREAM_TYPE_USER_PRIVATE_START &&
-                    streamType <= STREAM_TYPE_USER_PRIVATE_END)
+                if (streamType >= STREAM_TYPE_USER_PRIVATE_START)
                 {
                     return "User Private";
                 }
                 else if (streamType >= STREAM_TYPE_13818_1_RESERVED_START &&
                          streamType <= STREAM_TYPE_13818_1_RESERVED_END)
                 {
-                    return "ITU-T Rec. H.222.0 | ISO/IEC 13818-1 Reserved";
+                    return "ISO 13818-1 Reserved";
                 }
             }
     }
+    return "Unknown";
 }
 
 CatSection::CatSection()
