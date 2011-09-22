@@ -160,6 +160,14 @@ PatSection::~PatSection()
 {
 }
 
+#if 0
+void PatSection::getPrograms(ProgramList& programs)
+{
+    programs.clear();
+    programs = programList;
+}
+#endif
+
 void PmtSection::onComplete()
 {
     // Parsing the PMT info
@@ -291,6 +299,13 @@ const char* PmtSection::getStreamTypeStr(uint8_t streamType)
     }
     return "Unknown";
 }
+
+#if 0
+void PmtSection::getStreamList(StreamList& streams)
+{
+
+}
+#endif
 
 CatSection::CatSection()
 {

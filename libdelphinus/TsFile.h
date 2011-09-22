@@ -25,6 +25,8 @@
 #define DELPHINUS_TSFILE_H
 #include <cstdio>
 #include "Ts.h"
+#include "Pes.h"
+#include "PsiTables.h"
 
 // view lets you view the packet in buffer, and the returned pointer
 // might not be valid after a next call to viewPacket
@@ -32,6 +34,22 @@
 
 class TsFile
 {
+    public:
+        struct PatInfo
+        {
+            uint64_t packetNumber;
+            PatSection::ProgramList programList;
+        };
+        struct PmtInfo
+        {
+            uint64_t packetNumber;
+            uint16_t pmtPid;
+            uint16_t programNumber;
+            uint16_t pcrPid;
+            PmtSection::StreamList streamList;
+        };
+        typedef std::list<PmtInfo> PmtInfoList;
+
     private:
         enum
         {
@@ -56,6 +74,13 @@ class TsFile
         uint8_t packetSize;
         // Indicated a valid TS file
         bool isTsFile;
+        // Indicates EOF
+        bool isEof;
+
+        // PAT info
+        PatInfo patInfo;
+        // PMT info
+        PmtInfoList pmtInfoList;
 
         void readFromOffset(uint64_t offset);
         void validate();
@@ -82,8 +107,8 @@ class TsFile
         TsPacket* viewNextPacket();
         TsPacket* viewPreviousPacket();
 
-//        ProgramInfo* getProgramInfo();
-//        NetworkInfo* getNetworkInfo();
+        const PatInfo& getPatInfo();
+        const PmtInfoList& getPmtInfoList();
 //        bool seek(uint64_t offset);
         uint64_t getFileSize();
         uint8_t getPacketSize();
@@ -97,6 +122,16 @@ inline uint64_t TsFile::getFileSize()
 inline uint8_t TsFile::getPacketSize()
 {
     return packetSize;
+}
+
+inline const TsFile::PatInfo& TsFile::getPatInfo()
+{
+    return patInfo;
+}
+
+inline const TsFile::PmtInfoList& TsFile::getPmtInfoList()
+{
+    return pmtInfoList;
 }
 
 #endif

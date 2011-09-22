@@ -68,6 +68,34 @@ int main(int argc, char* argv[])
     MSG("File size: %" PRIu64 " bytes", tsFile.getFileSize());
     MSG("-----------------------------------------------------------");
 
+    const TsFile::PatInfo& patInfo = tsFile.getPatInfo();
+    const TsFile::PmtInfoList& pmtInfoList = tsFile.getPmtInfoList();
+
+    MSG("Found PAT in packet %lu", patInfo.packetNumber);
+    for (PatSection::ProgramList::const_iterator ix = patInfo.programList.begin();
+         ix != patInfo.programList.end(); ++ix)
+    {
+        MSG("Program: %u PID: 0x%04x (%u)", ix->programNumber, ix->pmtPid, ix->pmtPid);
+    }
+    MSG("\n");
+    for (TsFile::PmtInfoList::const_iterator ix = pmtInfoList.begin();
+         ix != pmtInfoList.end(); ++ix)
+    {
+        MSG("Found PMT PID: 0x%04x (%u) in packet %lu",
+            ix->pmtPid, ix->pmtPid, ix->packetNumber);
+        MSG("--- Program: %u", ix->programNumber);
+        MSG("--- PCR PID: 0x%04x (%u)", ix->pcrPid, ix->pcrPid);
+        const PmtSection::StreamList& streamList = ix->streamList;
+        for (PmtSection::StreamList::const_iterator iy = streamList.begin();
+             iy != streamList.end(); ++iy)
+        {
+            MSG("--- PID: 0x%04x (%u) - %s (0x%02x)",
+                iy->pid, iy->pid, PmtSection::getStreamTypeStr(iy->streamType), iy->streamType);
+        }
+        MSG("");
+    }
+
+#if 0
     uint64_t packetCount = 0;
     TsPacket* tsPacket = NULL;
     tsPacket = tsFile.viewPacketByNumber(0);
@@ -96,7 +124,7 @@ int main(int argc, char* argv[])
                 {
                     // It must be a section
                     PsiSection psiSection;
-#if 1
+#if 0
                     if (psiSection.parse(tsPacket->getPayload()))
                     {
                         if (psiSection.getTableId() == PsiSection::TABLE_PAT)
@@ -165,16 +193,19 @@ int main(int argc, char* argv[])
                     }
 #endif
                 }
-//                MSG("hasAdaptation: %d PES Start Code: 0x%08x",
-//                    tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());
-//                MSG("streamId: 0x%02x", pesPacket.getStreamId());
-//                MSG("PES packet length: 0x%02x", pesPacket.getLength());
+#if 0
+                MSG("hasAdaptation: %d PES Start Code: 0x%08x",
+                    tsPacket->hasAdaptationField(), pesPacket.getStartCodePrefix());
+                MSG("streamId: 0x%02x", pesPacket.getStreamId());
+                MSG("PES packet length: 0x%02x", pesPacket.getLength());
+#endif
             }
 //            MSG("-----------------------------------------------------------");
         }
         tsPacket = tsFile.viewNextPacket();
         ++packetCount;
     }
+#endif
 
     return 0;
 }

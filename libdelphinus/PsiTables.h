@@ -138,6 +138,7 @@ class PatSection : public PsiSectionCommon
 
         uint16_t getTransportStreamId();
         const ProgramList& getPrograms();
+//        void getPrograms(ProgramList& programs);
         uint16_t getNetworkPid();
 };
 
@@ -256,6 +257,7 @@ class PmtSection : public PsiSectionCommon
         uint16_t getPcrPid();
         const PsiDescriptor& getProgramInfoDescriptor();
         const StreamList& getStreamList();
+//        void getStreamList(StreamList& streams);
 };
 
 #define PSI_SSI_SHIFT                   7

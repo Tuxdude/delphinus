@@ -46,7 +46,7 @@ uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size);
 uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size)
 {
     uint64_t readSize = fread(buffer, size, 1, fileHandle);
-    MSG("Only read: %lu", readSize);
+    MSG("Read from file: %lu", readSize);
     if (readSize == 1)
     {
         return size;
@@ -66,17 +66,26 @@ uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size)
 
 void TsFile::readFromOffset(uint64_t offset)
 {
-    MSG("Gonna read from offset: %lu", offset);
-    if (!fseeko(fileHandle, offset, SEEK_SET))
+    assert(offset % BUFFER_SIZE == 0);
+    if (currentFileOffset != offset)
     {
-        validBufferSize = readFile(buffer, fileHandle, BUFFER_SIZE);
-        currentFileOffset = offset;
-        //FIXME: Handle the EOF case
-        assert(validBufferSize > 0);
+        MSG("Gonna read from offset: %lu", offset);
+        if (!fseeko(fileHandle, offset, SEEK_SET))
+        {
+            validBufferSize = readFile(buffer, fileHandle, BUFFER_SIZE);
+            currentFileOffset = offset;
+            //FIXME: Handle the EOF case
+            isEof = (validBufferSize == 0);
+            MSG("isEof: %d", isEof);
+        }
+        else
+        {
+            assert(false);
+        }
     }
     else
     {
-        assert(false);
+        MSG("Buffer already has the data - skipping file read");
     }
 }
 
@@ -112,28 +121,120 @@ void TsFile::validate()
 
 void TsFile::collectMetadata()
 {
-    // Approach 1 - Using PID based filtering
-    // Start from packet 0
-    // Check the PID of each packet for PID 0 to find the PAT
-    // Parse the first PAT and find out the PMT PIDs
-    // Scan from the start again to match packets with any of the PMT PIDs
-    // Find all the PMT PIDs and parse the program
-    //
-    // Approach 2 - Using section header's table ID based filtering (more efficient)
+    // Approach - Using section header's table ID based filtering (more efficient)
     // Start from packet 0
     // If all PIDs in PAT and PMT found and PID not in already found list:
     //      Check for sections when PUSI = 1
     //      If it is a section - check for Table IDs 0x00 and 0x02
     //      Then parse it - add PID to found list
     //
-    //  Print out:
-    //  PAT Info:
-    //  PMTs
-    //  Network PID
-    //  Foreach PMT PID - program info:
-    //  PID - stream type - descriptive stream type str
     std::set<uint16_t> pidsToFind;
-    std::list<uint16_t> foundPids;
+    std::set<uint16_t> foundPids;
+    patInfo.programList.clear();
+    pmtInfoList.clear();
+
+    uint64_t lastFileOffset = 0;
+    readFromOffset(lastFileOffset);
+
+    TsPacket tsPacket;
+    pidsToFind.insert(TsPacket::PID_PAT);
+
+    while(!isEof && pidsToFind.size() > 0)
+    {
+        uint8_t* data = buffer;
+        uint64_t packetCount = 0;
+        uint64_t maxPackets = validBufferSize / packetSize;
+        uint64_t remainingData = validBufferSize;
+
+        while (pidsToFind.size() > 0 && packetCount < maxPackets)
+        {
+//            MSG("Parsing packet: %lu", packetCount);
+            if (!tsPacket.parse(data, remainingData))
+            {
+                ERR("Invalid TS packet");
+                assert(false);
+            }
+            uint16_t pid = tsPacket.getPid();
+            // PID is not NULL
+            // PID is not in the already found list (FIXME: When sections are split ??)
+            // Packet has payload and PUSI set to 1
+            if (pid != TsPacket::PID_NULL && foundPids.find(pid) == foundPids.end() &&
+                    tsPacket.hasPayload() && tsPacket.getPayloadUnitStartIndicator())
+            {
+                PesPacket pesPacket;
+                pesPacket.parse(tsPacket.getPayload());
+                if (pesPacket.getStartCodePrefix() != 0x000001)
+                {
+                    // If it is not a PES packet, it must be a section
+                    PsiSection psiSection;
+                    if (psiSection.parse(tsPacket.getPayload()))
+                    {
+                        MSG("Parsing Packet with a PSI Section PID: 0x%04x", pid);
+                        // If it is a section, check the TableId
+                        // The only ones we're interested in are PAT and PMT
+                        if (psiSection.getTableId() == PsiSection::TABLE_PAT)
+                        {
+                            MSG("Found PAT");
+                            PatSection patSection;
+                            patSection.parse(tsPacket.getPayload(),
+                                             tsPacket.getPacketSize() -
+                                             psiSection.getDataOffset());
+                            if (patSection.isCompleteSection())
+                            {
+                                MSG("complete PAT");
+                                const PatSection::ProgramList& programList = patSection.getPrograms();
+                                patInfo.programList = programList;
+                                patInfo.packetNumber = (currentFileOffset / BUFFER_SIZE) + packetCount;
+                                foundPids.insert(pid);
+                                pidsToFind.erase(pid);
+                                for (PatSection::ProgramList::const_iterator ix = programList.begin();
+                                     ix != programList.end(); ++ix)
+                                {
+                                    pidsToFind.insert(ix->pmtPid);
+                                }
+                            }
+                        }
+                        else if (psiSection.getTableId() == PsiSection::TABLE_PMT)
+                        {
+                            MSG("Found PMT");
+                            PmtSection pmtSection;
+                            pmtSection.parse(tsPacket.getPayload(),
+                                    tsPacket.getPacketSize() -
+                                    psiSection.getDataOffset());
+                            if (pmtSection.isCompleteSection())
+                            {
+                                MSG("complete PMT");
+                                const PmtSection::StreamList& streamList = pmtSection.getStreamList();
+                                PmtInfo pmtInfo;
+                                pmtInfo.packetNumber = (currentFileOffset / BUFFER_SIZE) + packetCount;
+                                pmtInfo.pmtPid = pid;
+                                pmtInfo.programNumber = pmtSection.getProgramNumber();
+                                pmtInfo.pcrPid = pmtSection.getPcrPid();
+                                pmtInfo.streamList = streamList;
+                                pmtInfoList.push_back(pmtInfo);
+                                foundPids.insert(pid);
+                                pidsToFind.erase(pid);
+                            }
+                        }
+                    }
+                }
+            }
+            packetCount += 1;
+            data += packetSize;
+            remainingData -= packetSize;
+        }
+        if (pidsToFind.size() > 0)
+        {
+            // We have either reached the end of the buffer and need to read
+            // the next bytes of the file into the buffer (or)
+            // we have reached the EOF - FIXME
+            if (!isEof)
+            {
+                lastFileOffset += BUFFER_SIZE;
+                readFromOffset(lastFileOffset);
+            }
+        }
+    }
 }
 
 TsFile::TsFile()
@@ -143,10 +244,11 @@ TsFile::TsFile()
         viewPacket(NULL),
         fileSize(0),
         validBufferSize(0),
-        currentFileOffset(0),
+        currentFileOffset((uint64_t) - 1),
         lastPacketOffset((uint64_t) - 1),
         packetSize(0),
-        isTsFile(false)
+        isTsFile(false),
+        isEof(true)
 {
     buffer = new uint8_t[BUFFER_SIZE];
     assert(buffer != NULL);
@@ -180,7 +282,8 @@ bool TsFile::open(const char* fileName)
     fseeko(fileHandle, 0, SEEK_END);
     fileSize = ftello(fileHandle);
     fseeko(fileHandle, 0, SEEK_SET);
-    lastPacketOffset = fileSize - packetSize;
+    lastPacketOffset = (uint64_t) - 1;
+    isEof = (fileSize == 0);
 
     validate();
     collectMetadata();
@@ -195,6 +298,11 @@ void TsFile::close()
         fclose(fileHandle);
         fileHandle = NULL;
         fileSize = 0;
+        validBufferSize = 0;
+        packetSize = 0;
+        currentFileOffset = (uint64_t) - 1;
+        lastPacketOffset = (uint64_t) - 1;
+        isEof = true;
     }
 }
 
