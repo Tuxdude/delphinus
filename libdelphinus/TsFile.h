@@ -43,11 +43,18 @@ class TsFile
         FILE* fileHandle;
         TsPacket* viewPacket;
 
+        // File size in bytes
         uint64_t fileSize;
+        // Number of bytes of data valid in the buffer currently
         uint64_t validBufferSize;
+        // Current offset within the file for the start of the buffer
         uint64_t currentFileOffset;
+        // File offset for the last packet fetched using any of the
+        // viewPacket() calls
         uint64_t lastPacketOffset;
+        // Size of the packets of the current TS
         uint8_t packetSize;
+        // Indicated a valid TS file
         bool isTsFile;
 
         void readFromOffset(uint64_t offset);

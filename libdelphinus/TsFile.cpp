@@ -23,6 +23,8 @@
 
 #include "TsFile.h"
 #include <cassert>
+#include <list>
+#include <set>
 
 //#define DEBUG
 
@@ -130,6 +132,8 @@ void TsFile::collectMetadata()
     //  Network PID
     //  Foreach PMT PID - program info:
     //  PID - stream type - descriptive stream type str
+    std::set<uint16_t> pidsToFind;
+    std::list<uint16_t> foundPids;
 }
 
 TsFile::TsFile()
