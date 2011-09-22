@@ -244,6 +244,8 @@ const char* PmtSection::getStreamTypeStr(uint8_t streamType)
             return "ISO/IEC 13818-6 Synchronized Download Protocol";
         case STREAM_TYPE_14496_10_VIDEO:
             return "H.264 Video";
+        case STREAM_TYPE_AVS_VIDEO:
+            return "AVS Video";
         case STREAM_TYPE_DC_II_VIDEO:
             return "DigiCipher II Video / LPCM Audio";
         case STREAM_TYPE_A52_AC3_AUDIO:

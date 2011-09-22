@@ -175,10 +175,15 @@ class PmtSection : public PsiSectionCommon
             STREAM_TYPE_13818_1_PES_PRIVATE_DATA        = 0x06,
             STREAM_TYPE_13522_MHEG                      = 0x07,
             STREAM_TYPE_13818_1_DSMCC                   = 0x08,
+            // Auxillary
             STREAM_TYPE_H222_1                          = 0x09,
+            // Multi protocol encapsulation
             STREAM_TYPE_13818_6_TYPE_A                  = 0x0A,
+            // DSM-CC U-N messages
             STREAM_TYPE_13818_6_TYPE_B                  = 0x0B,
+            // Stream descriptors
             STREAM_TYPE_13818_6_TYPE_C                  = 0x0C,
+            // Sections
             STREAM_TYPE_13818_6_TYPE_D                  = 0x0D,
             STREAM_TYPE_13818_1_AUX                     = 0x0E,
             STREAM_TYPE_13818_7_AAC_ADTS                = 0x0F,
@@ -188,6 +193,8 @@ class PmtSection : public PsiSectionCommon
             STREAM_TYPE_14496_1_FLEXMUX_SECTIONS        = 0x13,
             STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL  = 0x14,
             STREAM_TYPE_14496_10_VIDEO                  = 0x1b,
+            // Chinese standard
+            STREAM_TYPE_AVS_VIDEO                       = 0x42,
             // 0x80 can also be LPCM audio
             STREAM_TYPE_DC_II_VIDEO                     = 0x80,
             STREAM_TYPE_A52_AC3_AUDIO                   = 0x81,
