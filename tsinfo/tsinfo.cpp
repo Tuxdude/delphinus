@@ -72,10 +72,12 @@ int main(int argc, char* argv[])
     const TsFile::PmtInfoList& pmtInfoList = tsFile.getPmtInfoList();
 
     MSG("Found PAT in packet %lu", patInfo.packetNumber);
+    MSG("--- Transport Stream ID: 0x%04x (%u)",
+        patInfo.transportStreamId, patInfo.transportStreamId);
     for (PatSection::ProgramList::const_iterator ix = patInfo.programList.begin();
          ix != patInfo.programList.end(); ++ix)
     {
-        MSG("Program: %u PID: 0x%04x (%u)", ix->programNumber, ix->pmtPid, ix->pmtPid);
+        MSG("--- Program: %u PID: 0x%04x (%u)", ix->programNumber, ix->pmtPid, ix->pmtPid);
     }
     MSG("\n");
     for (TsFile::PmtInfoList::const_iterator ix = pmtInfoList.begin();

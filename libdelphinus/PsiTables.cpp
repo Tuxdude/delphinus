@@ -87,6 +87,8 @@ void PsiSectionCommon::parse(uint8_t* data, uint16_t size, uint8_t tableId)
     data += *data + 1;
     // Subtract the number of bytes lost in the header - we dont store
     // the section header
+    // NOTE: 3 bytes are already lost in the fields before and including the
+    // section length field.
     sectionLength = PSI_GET_LENGTH(((ByteField*)data)) - 5;
     tableIdExtension = PSI_GET_TABLE_ID_EXTN(((ByteField*)data));
     currentSection = PSI_GET_SECTION_NUMBER(((ByteField*)data));
@@ -320,6 +322,24 @@ CatSection::~CatSection()
 void CatSection::onComplete()
 {
     // Store the CA descriptor details
+    descriptor.start = start;
+    // Subtract the size of the CRC_32
+    descriptor.size = sectionLength -4;
+}
+
+TsdtSection::TsdtSection()
+{
+    descriptor.start = NULL;
+    descriptor.size = 0;
+}
+
+TsdtSection::~TsdtSection()
+{
+}
+
+void TsdtSection::onComplete()
+{
+    // Store the TSDT descriptor details
     descriptor.start = start;
     // Subtract the size of the CRC_32
     descriptor.size = sectionLength -4;

@@ -38,6 +38,7 @@ class TsFile
         struct PatInfo
         {
             uint64_t packetNumber;
+            uint16_t transportStreamId;
             PatSection::ProgramList programList;
         };
         struct PmtInfo

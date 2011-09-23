@@ -51,19 +51,45 @@ class PsiSection
     public:
         enum
         {
-            TABLE_PAT                        = 0x00,
-            TABLE_CAT                        = 0x01,
-            TABLE_PMT                        = 0x02,
-            TABLE_TSDT                       = 0x03,
-            TABLE_SCENE_DESCRIPTION_SECTION  = 0x04,
-            TABLE_OBJECT_DESCRIPTION_SECTION = 0x05,
-            TABLE_ISO_13818_1_RESERVED_START = 0x06,
-            TABLE_ISO_13818_1_RESERVED_END   = 0x37,
-            TABLE_ISO_13818_6_START          = 0x38,
-            TABLE_ISO_13818_6_END            = 0x3F,
-            TABLE_USER_PRIVATE_START         = 0x40,
-            TABLE_USER_PRIVATE_END           = 0xFE,
-            TABLE_FORBIDDEN                  = 0xFF
+            TABLE_PAT                           = 0x00,
+            TABLE_CAT                           = 0x01,
+            TABLE_PMT                           = 0x02,
+            TABLE_TSDT                          = 0x03,
+            TABLE_SCENE_DESCRIPTION             = 0x04,
+            TABLE_OBJECT_DESCRIPTION            = 0x05,
+            TABLE_13818_1_RESERVED_START        = 0x06,
+            TABLE_13818_1_RESERVED_END          = 0x37,
+            TABLE_13818_6_START                 = 0x38,
+            TABLE_13818_6_END                   = 0x3F,
+            TABLE_NETWORK_INFO_ACTUAL           = 0x40,
+            TABLE_NETWORK_INFO_OTHER            = 0x41,
+            TABLE_SERVICE_DESCRIPTION_ACTUAL    = 0x42,
+            TABLE_SERVICE_DESCRIPTION_OTHER     = 0x46,
+            TABLE_BAT                           = 0x4A,
+            TABLE_EIT_ACTUAL_PRESENT_FOLLOWING  = 0x4E,
+            TABLE_EIT_OTHER_PRESENT_FOLLOWING   = 0x4F,
+            TABLE_EIT_ACTUAL_SCHEDULE_START     = 0x50,
+            TABLE_EIT_ACTUAL_SCHEDULE_END       = 0x5F,
+            TABLE_EIT_OTHER_SCHEDULE_START      = 0x60,
+            TABLE_EIT_OTHER_SCHEDULE_END        = 0x6F,
+            TABLE_TDT                           = 0x70,
+            TABLE_RST                           = 0x71,
+            TABLE_STUFFING                      = 0x72,
+            TABLE_TOT                           = 0x73,
+            TABLE_APP_INFO                      = 0x74,
+            TABLE_CONTAINER                     = 0x75,
+            TABLE_RELATED_CONTENT               = 0x76,
+            TABLE_CONTENT                       = 0x77,
+            TABLE_MPE_FEC                       = 0x78,
+            TABLE_RESOLUTION_NOTIFICATION       = 0x79,
+            TABLE_MPE_IFEC                      = 0x7A,
+            TABLE_DISCONTINUITY_INFO            = 0x7E,
+            TABLE_SELECTION_INFO                = 0x7F,
+            TABLE_DVB_USER_DEFINED_START        = 0x80,
+            TABLE_DVB_USER_DEFINED_END          = 0xFE,
+            TABLE_13818_1_USER_PRIVATE_START    = 0x40,
+            TABLE_13818_1_USER_PRIVATE_END      = 0xFE,
+            TABLE_FORBIDDEN                     = 0xFF
         };
 
     private:
@@ -260,6 +286,53 @@ class PmtSection : public PsiSectionCommon
 //        void getStreamList(StreamList& streams);
 };
 
+class TsdtSection : public PsiSectionCommon
+{
+    private:
+        uint8_t* start;
+        PsiDescriptor descriptor;
+
+        void onComplete();
+
+    public:
+        TsdtSection();
+        ~TsdtSection();
+
+        void parse(uint8_t* data, uint16_t size);
+        void append(uint8_t* data, uint16_t size);
+
+        const PsiDescriptor& getDescriptor();
+};
+
+class NitSection : public PsiSectionCommon
+{
+    public:
+        struct TsInfo
+        {
+            uint16_t transportStreamId;
+            uint16_t originalNetworkId;
+            PsiDescriptor transportDescriptor;
+        };
+        typedef std::list<TsInfo> TsInfoList;
+
+    private:
+        uint8_t* start;
+        PsiDescriptor networkDescriptor;
+
+        void onComplete();
+
+    public:
+        NitSection();
+        ~NitSection();
+
+        void parse(uint8_t* data, uint16_t size);
+        void append(uint8_t* data, uint16_t size);
+
+        uint16_t getNetworkId();
+        const PsiDescriptor& getNetworkDescriptor();
+        const TsInfoList& getTsInfoList();
+};
+
 #define PSI_SSI_SHIFT                   7
 #define PSI_HARD_ZERO_MASK              0x40
 #define PSI_HARD_ZERO_SHIFT             6
@@ -428,6 +501,21 @@ inline void CatSection::append(uint8_t* data, uint16_t size)
 }
 
 inline const PsiDescriptor& CatSection::getDescriptor()
+{
+    return descriptor;
+}
+
+inline void TsdtSection::parse(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_TSDT);
+}
+
+inline void TsdtSection::append(uint8_t* data, uint16_t size)
+{
+    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_TSDT);
+}
+
+inline const PsiDescriptor& TsdtSection::getDescriptor()
 {
     return descriptor;
 }

@@ -31,12 +31,23 @@ class TsPacket
     public:
         enum
         {
-            PACKET_SIZE_TS  = 188,
-            PACKET_SIZE_TTS = 192,
-            PID_PAT         = 0,
-            PID_CAT         = 1,
-            PID_TSDT        = 2,
-            PID_NULL        = 0x1fff
+            PACKET_SIZE_TS              = 188,
+            PACKET_SIZE_TTS             = 192,
+            PID_PAT                     = 0x0000,
+            PID_CAT                     = 0x0001,
+            PID_TSDT                    = 0x0002,
+            PID_NIT_ST                  = 0x0010,
+            PID_SDT_BAT_ST              = 0x0011,
+            PID_EIT_CIT_ST              = 0x0012,
+            PID_RST_ST                  = 0x0013,
+            PID_TDT_TOT_ST              = 0x0014,
+            PID_NETWORK_SYNC            = 0x0015,
+            PID_RNT                     = 0x0016,
+            PID_INBAND_SIGNALLING       = 0x001C,
+            PID_MEASUREMENT             = 0x001D,
+            PID_DIT                     = 0x001E,
+            PID_SIT                     = 0x001F,
+            PID_NULL                    = 0x1FFF
         };
 
     private:

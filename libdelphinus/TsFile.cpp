@@ -185,6 +185,7 @@ void TsFile::collectMetadata()
                                 const PatSection::ProgramList& programList = patSection.getPrograms();
                                 patInfo.programList = programList;
                                 patInfo.packetNumber = (currentFileOffset / BUFFER_SIZE) + packetCount;
+                                patInfo.transportStreamId = patSection.getTransportStreamId();
                                 foundPids.insert(pid);
                                 pidsToFind.erase(pid);
                                 for (PatSection::ProgramList::const_iterator ix = programList.begin();
