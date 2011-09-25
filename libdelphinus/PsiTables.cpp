@@ -162,14 +162,6 @@ PatSection::~PatSection()
 {
 }
 
-#if 0
-void PatSection::getPrograms(ProgramList& programs)
-{
-    programs.clear();
-    programs = programList;
-}
-#endif
-
 void PmtSection::onComplete()
 {
     // Parsing the PMT info
@@ -302,13 +294,6 @@ const char* PmtSection::getStreamTypeStr(uint8_t streamType)
     return "Unknown";
 }
 
-#if 0
-void PmtSection::getStreamList(StreamList& streams)
-{
-
-}
-#endif
-
 CatSection::CatSection()
 {
     descriptor.start = NULL;
@@ -345,3 +330,34 @@ void TsdtSection::onComplete()
     descriptor.size = sectionLength -4;
 }
 
+void NitSection::onComplete()
+{
+    networkDescriptor.start = start + 2;
+    networkDescriptor.size = NIT_GET_NW_DESCRIPTOR_LENGTH(((ByteField*)start));
+    uint8_t * data = start + 2 + networkDescriptor.size;
+    uint16_t tsLoopLength = NIT_GET_NW_DESCRIPTOR_LENGTH(((ByteField*)data));
+    data += 2;
+    TsInfo tsInfo;
+
+    tsInfoList.clear();
+    while (tsLoopLength > 0)
+    {
+        tsInfo.transportStreamId = NIT_GET_TSID(((ByteField*)data));
+        tsInfo.originalNetworkId = NIT_GET_ORIG_NWID(((ByteField*)data));
+        tsInfo.transportDescriptor.start = data + 6;
+        tsInfo.transportDescriptor.size = NIT_GET_TS_DESCRIPTOR_LENGTH(((ByteField*)data));
+        tsInfoList.push_back(tsInfo);
+
+        uint16_t loopSize = 6 + tsInfo.transportDescriptor.size;
+        data += loopSize;
+        tsLoopLength -= loopSize;
+    }
+}
+
+NitSection::NitSection()
+{
+}
+
+NitSection::~NitSection()
+{
+}

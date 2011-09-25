@@ -164,7 +164,6 @@ class PatSection : public PsiSectionCommon
 
         uint16_t getTransportStreamId();
         const ProgramList& getPrograms();
-//        void getPrograms(ProgramList& programs);
         uint16_t getNetworkPid();
 };
 
@@ -185,8 +184,6 @@ class CatSection : public PsiSectionCommon
 
         const PsiDescriptor& getDescriptor();
 };
-
-// FIXME: All descriptors should be returned in a ptr,length fashion
 
 class PmtSection : public PsiSectionCommon
 {
@@ -283,7 +280,6 @@ class PmtSection : public PsiSectionCommon
         uint16_t getPcrPid();
         const PsiDescriptor& getProgramInfoDescriptor();
         const StreamList& getStreamList();
-//        void getStreamList(StreamList& streams);
 };
 
 class TsdtSection : public PsiSectionCommon
@@ -318,6 +314,7 @@ class NitSection : public PsiSectionCommon
     private:
         uint8_t* start;
         PsiDescriptor networkDescriptor;
+        TsInfoList tsInfoList;
 
         void onComplete();
 
@@ -378,6 +375,21 @@ class NitSection : public PsiSectionCommon
 #define PMT_GET_STREAM_TYPE(x)          (x->byte0)
 #define PMT_GET_ES_PID(x)               (((x->byte1 << PMT_ES_PID_SHIFT) | (x->byte2)) & PMT_ES_PID_MASK)
 #define PMT_GET_ES_INFO_LENGTH(x)       (((x->byte3 << PMT_EIL_SHIFT) | (x->byte4)) & PMT_EIL_MASK)
+
+#define NIT_NDL_MASK                    0x0FFF
+#define NIT_NDL_SHIFT                   8
+#define NIT_TSLL_MASK                   0x0FFF
+#define NIT_TSLL_SHIFT                  8
+#define NIT_TSID_SHIFT                  8
+#define NIT_ORIG_NWID_SHIFT             8
+#define NIT_TSDL_MASK                   0x0FFF
+#define NIT_TSDL_SHIFT                  8
+
+#define NIT_GET_NW_DESCRIPTOR_LENGTH(x) (((x->byte0 << NIT_NDL_SHIFT) | (x->byte1)) & NIT_NDL_MASK)
+#define NIT_GET_TS_LOOP_LENGTH(x)       (((x->byte0 << NIT_TSLL_SHIFT) | (x->byte1)) & NIT_TSLL_MASK)
+#define NIT_GET_TSID(x)                 ((x->byte0 << NIT_TSID_SHIFT) | (x->byte1))
+#define NIT_GET_ORIG_NWID(x)            ((x->byte2 << NIT_ORIG_NWID_SHIFT) | (x->byte3))
+#define NIT_GET_TS_DESCRIPTOR_LENGTH(x) (((x->byte4 << NIT_TSDL_SHIFT) | (x->byte5)) & NIT_TSDL_MASK)
 
 
 inline uint8_t PsiSection::getPointerField()
@@ -518,6 +530,21 @@ inline void TsdtSection::append(uint8_t* data, uint16_t size)
 inline const PsiDescriptor& TsdtSection::getDescriptor()
 {
     return descriptor;
+}
+
+inline uint16_t NitSection::getNetworkId()
+{
+    return tableIdExtension;
+}
+
+inline const PsiDescriptor& NitSection::getNetworkDescriptor()
+{
+    return networkDescriptor;
+}
+
+inline const NitSection::TsInfoList& NitSection::getTsInfoList()
+{
+    return tsInfoList;
 }
 
 #endif
