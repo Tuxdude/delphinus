@@ -330,6 +330,8 @@ class NitSection : public PsiSectionCommon
         const TsInfoList& getTsInfoList();
 };
 
+// Use these macros only within this file and PsiTables.cpp
+
 #define PSI_SSI_SHIFT                   7
 #define PSI_HARD_ZERO_MASK              0x40
 #define PSI_HARD_ZERO_SHIFT             6
