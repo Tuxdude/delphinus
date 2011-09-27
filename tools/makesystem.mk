@@ -291,7 +291,6 @@ endif
 
 # Settings for the release
 RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
-DELPHINUS := delphinus
 ifeq ($(MAKECMDGOALS),release)
     SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
     SVN_INFO := $(shell $(SVN_INFO_CMD) 1>/dev/null 2>/dev/null; echo $$?)
