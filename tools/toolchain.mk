@@ -5,7 +5,7 @@
 #   This file is part of delphinus - a stream analyzer for various multimedia
 #   stream formats and containers.
 #
-#   Copyright (C) 2011 Ashwin Gururaghavendran
+#   Copyright (C) 2011 Ashwin (Tuxdude)
 #   tuxdude@users.sourceforge.net
 #
 #   This program is free software: you can redistribute it and/or modify
