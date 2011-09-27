@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
     const TsFile::PatInfo& patInfo = tsFile.getPatInfo();
     const TsFile::PmtInfoList& pmtInfoList = tsFile.getPmtInfoList();
 
-    MSG("Found PAT in packet %lu", patInfo.packetNumber);
+    MSG("Found PAT in packet %" PRIu64, patInfo.packetNumber);
     MSG("--- Transport Stream ID: 0x%04x (%u)",
         patInfo.transportStreamId, patInfo.transportStreamId);
     for (PatSection::ProgramList::const_iterator ix = patInfo.programList.begin();
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     for (TsFile::PmtInfoList::const_iterator ix = pmtInfoList.begin();
          ix != pmtInfoList.end(); ++ix)
     {
-        MSG("Found PMT PID: 0x%04x (%u) in packet %lu",
+        MSG("Found PMT PID: 0x%04x (%u) in packet %" PRIu64,
             ix->pmtPid, ix->pmtPid, ix->packetNumber);
         MSG("--- Program: %u", ix->programNumber);
         MSG("--- PCR PID: 0x%04x (%u)", ix->pcrPid, ix->pcrPid);

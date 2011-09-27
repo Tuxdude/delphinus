@@ -26,11 +26,41 @@ DELPHINUS_CONFIG_MK := 1
 
 include $(BASE_DIR)/tools/toolchain.mk
 
+DELPHINUS := delphinus
+
 # Leaving this variable blank builds all architectures
 # Add architecture names from toolchain.mk into this variable to build
 # only for those architectures
 # Set only to build for host machine as of now
 # mingw-w32 and mingw-w64 also works
 ONLY_BUILD_ARCHS := $(ARCH_HOST)
+
+# Directory names where source/built files will be placed or exported
+EXPORT_BASE_DIR_NAME := dist
+EXPORT_RELEASES_DIR_NAME := release
+EXPORT_HEADERS_DIR_NAME := include
+EXPORT_LIBS_DIR_NAME := lib
+EXPORT_BINS_DIR_NAME := bin
+DEP_DIR_NAME := .dep
+
+# If you need to append to any of these flags universally, this is the 
+# right place to do it
+# Flags can also be set based on ARCH
+# NOTE: Do not remove the empty initialization as immediate variables,
+# failing which Makefile performance will degrade
+ARCH_FLAGS :=
+OPTIMIZATION_FLAGS :=
+WARN_FLAGS :=
+WARN_C_FLAGS :=
+WARN_CXX_FLAGS :=
+COMMON_FLAGS :=
+INC_PATH :=
+CFLAGS :=
+CXXFLAGS :=
+CPPFLAGS :=
+LDFLAGS :=
+
+# Final flag to indicate config.mk was actually parsed
+DELPHINUS_CONFIGURED := yes
 
 endif

@@ -24,10 +24,12 @@
 ifndef DELPHINUS_MAKESYSTEM_MK
 DELPHINUS_MAKESYSTEM_MK := 1
 
-# Verify BASE_DIR and BUILD_DIR are set and bail out if not
+# Verify BASE_DIR is set and bail out if not
 ifeq ($(BASE_DIR),)
     $(error Variable $$BASE_DIR must be set, aborting...)
 endif
+
+# BUILD_ARCHS should be set for all directories other than BASE_DIR
 ifeq ($(BUILD_ARCHS),)
     ifneq ($(BASE_DIR),.)
         $(error Variable $$BUILD_ARCHS must be set, aborting...)
@@ -38,6 +40,11 @@ endif
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
 include $(BASE_DIR)/tools/config.mk
+
+# If config.mk is not proper, bail out
+ifneq ($(DELPHINUS_CONFIGURED),yes)
+    $(error config.mk is invalid, aborting...)
+endif
 
 # Set the shell to bash
 SHELL := /bin/bash -e
@@ -56,8 +63,8 @@ define ExecWithMsg
 endef
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
-EXPORTS_DIR := $(BASE_DIR)/dist
-EXPORT_RELEASES_DIR := $(EXPORTS_DIR)/release
+EXPORT_BASE_DIR := $(BASE_DIR)/$(EXPORT_BASE_DIR_NAME)
+EXPORT_RELEASES_DIR := $(EXPORT_BASE_DIR)/$(EXPORT_RELEASES_DIR_NAME)
 
 # Remove duplicates in BUILD_ARCHS
 BUILD_ARCHS := $(sort $(BUILD_ARCHS))
@@ -72,70 +79,32 @@ ifneq ($(ARCH),)
 
 # Setting up exports dir
 EXPORT_TRIGGER := .export_$(ARCH)
-EXPORT_HEADERS_BASE_DIR := $(EXPORTS_DIR)/$(ARCH)/include
+EXPORT_HEADERS_BASE_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_HEADERS_DIR_NAME)
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
     EXPORT_HEADERS_DIR := $(EXPORT_HEADERS_BASE_DIR)/$(EXPORT_HEADERS_PREFIX_DIR)
     REMOVE_EXPORT_HEADERS_PREFIX_DIR := $(RM_RECURSIVE) $(EXPORT_HEADERS_DIR)
 else
-    EXPORT_HEADERS_DIR = $(EXPORT_HEADERS_BASE_DIR)
+    EXPORT_HEADERS_DIR := $(EXPORT_HEADERS_BASE_DIR)
 endif
-EXPORT_LIBS_DIR := $(EXPORTS_DIR)/$(ARCH)/lib
-EXPORT_BINS_DIR := $(EXPORTS_DIR)/$(ARCH)/bin
-
-# Now choose the toolchain and architecture specific flags based on ARCH
-ARCH_FLAGS :=
-ifeq ($(ARCH),$(ARCH_HOST))
-    CC      := $(HOST_CC)
-    CXX     := $(HOST_CXX)
-    AS      := $(HOST_AS)
-    AR      := $(HOST_AR)
-    LD      := $(HOST_LD)
-    RANLIB  := $(HOST_RANLIB)
-    SIZE    := $(HOST_SIZE)
-    STRIP   := $(HOST_STRIP)
-    OBJCOPY := $(HOST_OBJCOPY)
-    NM      := $(HOST_NM)
-    ARCH_FLAGS += -fPIC
-endif
-ifeq ($(ARCH),$(ARCH_MINGW_W32))
-    CC      := $(MINGW_W32_CC)
-    CXX     := $(MINGW_W32_CXX)
-    AS      := $(MINGW_W32_AS)
-    AR      := $(MINGW_W32_AR)
-    LD      := $(MINGW_W32_LD)
-    RANLIB  := $(MINGW_W32_RANLIB)
-    SIZE    := $(MINGW_W32_SIZE)
-    STRIP   := $(MINGW_W32_STRIP)
-    OBJCOPY := $(MINGW_W32_OBJCOPY)
-    NM      := $(MINGW_W32_NM)
-endif
-ifeq ($(ARCH),$(ARCH_MINGW_W64))
-    CC      := $(MINGW_W64_CC)
-    CXX     := $(MINGW_W64_CXX)
-    AS      := $(MINGW_W64_AS)
-    AR      := $(MINGW_W64_AR)
-    LD      := $(MINGW_W64_LD)
-    RANLIB  := $(MINGW_W64_RANLIB)
-    SIZE    := $(MINGW_W64_SIZE)
-    STRIP   := $(MINGW_W64_STRIP)
-    OBJCOPY := $(MINGW_W64_OBJCOPY)
-    NM      := $(MINGW_W64_NM)
-endif
+EXPORT_LIBS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_LIBS_DIR_NAME)
+EXPORT_BINS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_BINS_DIR_NAME)
 
 # Setup compilation and linker flags
-OPTIMIZATION_FLAGS := -O3
-WARN_FLAGS := -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strings \
+ARCH_FLAGS += $(TOOLCHAIN_ARCH_FLAGS)
+OPTIMIZATION_FLAGS += -O3
+WARN_FLAGS += -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strings \
     -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith -Wmissing-declarations \
     -Wmissing-include-dirs -Wshadow -Wwrite-strings
-WARN_C_FLAGS := -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
-COMMON_FLAGS := $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
-INCPATH := -I. -I$(EXPORT_HEADERS_BASE_DIR)
+WARN_C_FLAGS += -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
+COMMON_FLAGS += $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
+INCPATH += -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
-CFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
+CFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
 CFLAGS += -std=gnu99
-CXXFLAGS := $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS)
-CPPFLAGS := $(INCPATH)
-LDFLAGS := -Wl,-O3 -Wl-z,defs
+CXXFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_CXX_FLAGS)
+CXXFLAGS += -std=gnu++0x
+CPPFLAGS += $(INCPATH)
+LDFLAGS += -Wl,-O3 -Wl-z,defs
 LDFLAGS += -L$(EXPORT_LIBS_DIR)
 
 LINKER := $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))
@@ -149,9 +118,9 @@ LINK_SHARED = $(call ExecWithMsg, "Linking Shared library $@", $(LINKER) $(LDARG
 LINK_STATIC = $(call ExecWithMsg, "Linking Static library $@", $(AR) cru $@ $^)
 
 # Commands for exporting, and adding exported files to cleanup list
-EXPORT_ALL_CMD =
-EXPORTED_FILES =
-EXPORT_LIST =
+EXPORT_ALL_CMD :=
+EXPORTED_FILES :=
+EXPORT_LIST :=
 ifneq ($(EXPORT_HEADERS),)
     EXPORT_ALL_CMD += $(CP) $(EXPORT_HEADERS) $(EXPORT_HEADERS_DIR);
     EXPORTED_FILES += $(addprefix $(EXPORT_HEADERS_DIR)/, $(notdir $(EXPORT_HEADERS)))
@@ -173,7 +142,7 @@ endif
 
 # Build and dependecy directories
 BUILD_DIR := $(ARCH)
-DEP_DIR := $(BUILD_DIR)/.dep
+DEP_DIR := $(BUILD_DIR)/$(DEP_DIR_NAME)
 
 # Clean-up files and directories
 CLEANUP_FILES += $(BUILD_DIR) $(EXPORTED_FILES)
@@ -252,16 +221,16 @@ ifneq ($(ONLY_BUILD_ARCHS),)
 endif
 
 # Directories to create and cleanup
-EXPORT_HEADERS_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include)
+EXPORT_HEADERS_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch)/include)
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
-    EXPORT_HEADERS_DIRS += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/include/$(EXPORT_HEADERS_PREFIX_DIR))
+    EXPORT_HEADERS_DIRS += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch)/include/$(EXPORT_HEADERS_PREFIX_DIR))
 endif
 
-DIRS_TO_CREATE := $(EXPORTS_DIR)
-DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch))
+DIRS_TO_CREATE := $(EXPORT_BASE_DIR)
+DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch))
 DIRS_TO_CREATE += $(EXPORT_HEADERS_DIRS)
-DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/lib)
-DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORTS_DIR)/$(build_arch)/bin)
+DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch)/lib)
+DIRS_TO_CREATE += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch)/bin)
 DIRS_TO_CREATE += $(EXPORT_RELEASES_DIR)
 $(shell $(MKDIR) $(DIRS_TO_CREATE))
 

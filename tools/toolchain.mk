@@ -67,11 +67,53 @@ MINGW_W64_OBJCOPY := $(MINGW_W64_TOOLCHAIN_PREFIX)objcopy
 MINGW_W64_NM      := $(MINGW_W64_TOOLCHAIN_PREFIX)nm
 
 # Generate the architecture names from the compiler info
-SED_EXTRACT_CMD := $(SED) 's/^\(Target:\) \(.*$$\)/\2/'
-ARCH_HOST := $(shell $(HOST_CC) -v 2>&1 | $(GREP) 'Target: ' | $(SED_EXTRACT_CMD))
-ARCH_MINGW_W32 := $(shell $(MINGW_W32_CC) -v 2>&1 | $(GREP) 'Target: ' | $(SED_EXTRACT_CMD))
-ARCH_MINGW_W64 := $(shell $(MINGW_W64_CC) -v 2>&1 | $(GREP) 'Target: ' | $(SED_EXTRACT_CMD))
+ARCH_HOST := $(shell $(HOST_CC) -dumpmachine)
+ARCH_MINGW_W32 := $(shell $(MINGW_W32_CC) -dumpmachine)
+ARCH_MINGW_W64 := $(shell $(MINGW_W64_CC) -dumpmachine)
 
 ALL_ARCHS := $(ARCH_HOST) $(ARCH_MINGW_W32) $(ARCH_MINGW_W64)
+
+ifneq ($(ARCH),)
+    # Now choose the toolchain and architecture specific flags based on ARCH
+ifeq ($(ARCH),$(ARCH_HOST))
+    CC                   := $(HOST_CC)
+    CXX                  := $(HOST_CXX)
+    AS                   := $(HOST_AS)
+    AR                   := $(HOST_AR)
+    LD                   := $(HOST_LD)
+    RANLIB               := $(HOST_RANLIB)
+    SIZE                 := $(HOST_SIZE)
+    STRIP                := $(HOST_STRIP)
+    OBJCOPY              := $(HOST_OBJCOPY)
+    NM                   := $(HOST_NM)
+    TOOLCHAIN_ARCH_FLAGS := -fPIC
+endif
+ifeq ($(ARCH),$(ARCH_MINGW_W32))
+    CC                   := $(MINGW_W32_CC)
+    CXX                  := $(MINGW_W32_CXX)
+    AS                   := $(MINGW_W32_AS)
+    AR                   := $(MINGW_W32_AR)
+    LD                   := $(MINGW_W32_LD)
+    RANLIB               := $(MINGW_W32_RANLIB)
+    SIZE                 := $(MINGW_W32_SIZE)
+    STRIP                := $(MINGW_W32_STRIP)
+    OBJCOPY              := $(MINGW_W32_OBJCOPY)
+    NM                   := $(MINGW_W32_NM)
+    TOOLCHAIN_ARCH_FLAGS :=
+endif
+ifeq ($(ARCH),$(ARCH_MINGW_W64))
+    CC                   := $(MINGW_W64_CC)
+    CXX                  := $(MINGW_W64_CXX)
+    AS                   := $(MINGW_W64_AS)
+    AR                   := $(MINGW_W64_AR)
+    LD                   := $(MINGW_W64_LD)
+    RANLIB               := $(MINGW_W64_RANLIB)
+    SIZE                 := $(MINGW_W64_SIZE)
+    STRIP                := $(MINGW_W64_STRIP)
+    OBJCOPY              := $(MINGW_W64_OBJCOPY)
+    NM                   := $(MINGW_W64_NM)
+    TOOLCHAIN_ARCH_FLAGS := 
+endif
+endif
 
 endif
