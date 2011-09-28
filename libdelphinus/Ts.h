@@ -23,11 +23,11 @@
  */
 
 /**
- *  \file Ts.h
- *  \brief Transport Stream packet related types.
+ *  \file   Ts.h
+ *  \brief  Transport Stream packet related types.
  *
- *  Contains all the data structures and types for handling a Transport
- *  Stream packet and the fields within.
+ *  Contains all the data structures, types and methods for handling a
+ *  Transport Stream (TS) packet and the fields within.
  *
  */
 
@@ -38,11 +38,10 @@
 #include "MpegConstants.h"
 
 /**
- *  \brief TsPacket represents a single TS packet.
+ *  \brief  TsPacket represents a single TS packet.
  *
  *  TsPacket provides the means to access the various fields in the Transport
  *  Stream packet header as well as the adaptation field and the payload.
- *
  */
 
 class TsPacket
@@ -61,101 +60,107 @@ class TsPacket
         ~TsPacket();
 
 /**
- *  \brief Parse the given set of bytes as a TS Packet and return the status.
- *  \param data The starting address of data to parse.
- *  \param size Maximum size to parse.
+ *  \brief  Parse the given set of bytes as a TS Packet and return the status.
+ *  \param  data The starting address of data to parse.
+ *  \param  size Maximum size to parse.
  *  \return Returns true if the parse is successfull and is a valid TS packet.
  */
         bool parse(uint8_t* data, uint64_t size);
 /**
- *  \brief Get the start address of the TS Packet.
+ *  \brief  Get the start address of the TS Packet.
  *  \return Returns the start address of the TS Packet.
  */
         uint8_t* getStart();
 /**
- *  \brief Get the size of the TS Packet.
+ *  \brief  Get the size of the TS Packet.
  *  \return TS Packet Size.
  */
         uint8_t getPacketSize();
 /**
- *  \brief Make a copy of the TS Packet. The memory is allocated from the heap
- *  for the new packet and is automatically freed in the destructor of
- *  TsPacket.
+ *  \brief  Make a copy of the TS Packet. The memory is allocated from the heap
+ *          for the new packet and is automatically freed in the destructor of
+ *          TsPacket.
  *  \return TsPacket handle with reference to a copy of the original data.
  */
         TsPacket* copy();
 /**
- *  \brief Get the SYNC byte field in the TS Packet header.
+ *  \brief  Get the SYNC byte field in the TS Packet header.
  *  \return SYNC byte in the TS Packet Header.
  */
         uint8_t getSyncByte();
 /**
- *  \brief Get the Transport Error Indicator flag in the TS Packet header.
+ *  \brief  Get the Transport Error Indicator flag in the TS Packet header.
  *  \return Transport Error Indicator flag in the TS Packet header.
  */
         bool getTransportErrorIndicator();
 /**
- *  \brief Get the Payload Unit Start Indicator flag in the TS Packet header.
+ *  \brief  Get the Payload Unit Start Indicator flag in the TS Packet header.
  *  \return Payload Unit Start Indicator flag in the TS Packet header.
  */
         bool getPayloadUnitStartIndicator();
 /**
- *  \brief Get the Transport Priority flag in the TS Packet header.
+ *  \brief  Get the Transport Priority flag in the TS Packet header.
  *  \return Transport Priority flag in the TS Packet header.
  */
         bool getTransportPriority();
 /**
- *  \brief Get the PID of the TS Packet.
+ *  \brief  Get the PID of the TS Packet.
  *  \return 13-bit PID field in the TS Packet header.
  */
         uint16_t getPid();
 /**
- *  \brief Get the Transport Scrambling Control flags in the TS Packet header.
+ *  \brief  Get the Transport Scrambling Control flags in the TS Packet header.
  *  \return 2-bit Transport Scrambling Control flags in the TS Packet header.
  */
         uint8_t getTransportScramblingControl();
 /**
- *  \brief Get the Adaptation Field Control flags in the TS Packet header.
+ *  \brief  Get the Adaptation Field Control flags in the TS Packet header.
  *  \return 2-bit Adaptation Field Control flags in the TS Packet header.
  */
         uint8_t getAdaptationFieldControl();
 /**
- *  \brief Determine if the TS Packet carries an adaptation field.
+ *  \brief  Determine if the TS Packet carries an adaptation field.
  *  \return TS Packet carries an adaptation field or not.
  */
         bool hasAdaptationField();
 /**
- *  \brief Determine if the TS Packet carries a payload.
+ *  \brief  Determine if the TS Packet carries a payload.
  *  \return TS Packet carries a payload or not.
  */
         bool hasPayload();
 /**
- *  \brief Get the Continuity Counter field in the TS Packet header.
+ *  \brief  Get the Continuity Counter field in the TS Packet header.
  *  \return 4-bit Continuity Counter in the TS Packet header.
  */
         uint8_t getContinuityCounter();
 /**
- *  \brief Get the start of the Adaptation Field in the TS Packet.
+ *  \brief  Get the start of the Adaptation Field in the TS Packet.
  *  \return Address of the start of the Adaptation Field in the TS Packet.
  */
         uint8_t* getAdaptationField();
 /**
- *  \brief Get the start offset of the payload in the TS packet.
+ *  \brief  Get the start offset of the payload in the TS packet.
  *  \return Start offset of the payload from the beginning of the TS packet.
  */
         uint8_t getPayloadOffset();
 /**
- *  \brief Get the size of the payload in the TS Packet.
+ *  \brief  Get the size of the payload in the TS Packet.
  *  \return Size of the payload in the TS Packet.
  */
         uint8_t getPayloadSize();
 /**
- *  \brief Get the start of the payload in the TS Packet.
+ *  \brief  Get the start of the payload in the TS Packet.
  *  \return Address of the start of the payload in the TS Packet.
  */
         uint8_t* getPayload();
 };
 
+/**
+ *  \brief  AdaptationField represents the adaptation field within a TS Packet.
+ *
+ *  AdaptationField provides the means to access the various fields within the
+ *  adaptation field of a TS Packet.
+ */
 class AdaptationField
 {
     private:
@@ -185,6 +190,14 @@ class AdaptationField
         uint8_t* getAdaptationFieldExtension();
 };
 
+/**
+ *  \brief  AdaptationFieldExtension represents the adaptation field extension
+ *  over the regular adaptation field.
+ *
+ *  AdaptationField provides the means to access the various fields within the
+ *  adaptation field extension of a TS Packet.
+ */
+
 class AdaptationFieldExtension
 {
     private:
@@ -205,7 +218,6 @@ class AdaptationFieldExtension
         bool hasSeamlessSplice();
         void getSeamlessSpliceInfo(uint8_t& spliceType, uint64_t& dtsNextAu);
 };
-
 
 
 #define TS_TEI_MASK                     0x80
