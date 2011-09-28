@@ -26,6 +26,8 @@
 #include <list>
 #include <set>
 
+using namespace MpegConstants;
+
 //#define DEBUG
 
 #ifdef WIN32
@@ -137,7 +139,7 @@ void TsFile::collectMetadata()
     readFromOffset(lastFileOffset);
 
     TsPacket tsPacket;
-    pidsToFind.insert(TsPacket::PID_PAT);
+    pidsToFind.insert(PID_PAT);
 
     while(!isEof && pidsToFind.size() > 0)
     {
@@ -158,7 +160,7 @@ void TsFile::collectMetadata()
             // PID is not NULL
             // PID is not in the already found list (FIXME: When sections are split ??)
             // Packet has payload and PUSI set to 1
-            if (pid != TsPacket::PID_NULL && foundPids.find(pid) == foundPids.end() &&
+            if (pid != PID_NULL && foundPids.find(pid) == foundPids.end() &&
                     tsPacket.hasPayload() && tsPacket.getPayloadUnitStartIndicator())
             {
                 PesPacket pesPacket;
@@ -172,7 +174,7 @@ void TsFile::collectMetadata()
                         MSG("Parsing Packet with a PSI Section PID: 0x%04x", pid);
                         // If it is a section, check the TableId
                         // The only ones we're interested in are PAT and PMT
-                        if (psiSection.getTableId() == PsiSection::TABLE_PAT)
+                        if (psiSection.getTableId() == TABLE_PAT)
                         {
                             MSG("Found PAT");
                             PatSection patSection;
@@ -195,7 +197,7 @@ void TsFile::collectMetadata()
                                 }
                             }
                         }
-                        else if (psiSection.getTableId() == PsiSection::TABLE_PMT)
+                        else if (psiSection.getTableId() == TABLE_PMT)
                         {
                             MSG("Found PMT");
                             PmtSection pmtSection;

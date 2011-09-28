@@ -24,8 +24,10 @@
 
 #ifndef DELPHINUS_PSI_TABLES_H
 #define DELPHINUS_PSI_TABLES_H
-#include "common/DelphinusUtils.h"
+
 #include <list>
+#include "common/DelphinusUtils.h"
+#include "MpegConstants.h"
 
 // Table ID                     8
 // section syntax indicator     1
@@ -48,50 +50,6 @@ struct PsiDescriptor
 
 class PsiSection
 {
-    public:
-        enum
-        {
-            TABLE_PAT                           = 0x00,
-            TABLE_CAT                           = 0x01,
-            TABLE_PMT                           = 0x02,
-            TABLE_TSDT                          = 0x03,
-            TABLE_SCENE_DESCRIPTION             = 0x04,
-            TABLE_OBJECT_DESCRIPTION            = 0x05,
-            TABLE_13818_1_RESERVED_START        = 0x06,
-            TABLE_13818_1_RESERVED_END          = 0x37,
-            TABLE_13818_6_START                 = 0x38,
-            TABLE_13818_6_END                   = 0x3F,
-            TABLE_NETWORK_INFO_ACTUAL           = 0x40,
-            TABLE_NETWORK_INFO_OTHER            = 0x41,
-            TABLE_SERVICE_DESCRIPTION_ACTUAL    = 0x42,
-            TABLE_SERVICE_DESCRIPTION_OTHER     = 0x46,
-            TABLE_BAT                           = 0x4A,
-            TABLE_EIT_ACTUAL_PRESENT_FOLLOWING  = 0x4E,
-            TABLE_EIT_OTHER_PRESENT_FOLLOWING   = 0x4F,
-            TABLE_EIT_ACTUAL_SCHEDULE_START     = 0x50,
-            TABLE_EIT_ACTUAL_SCHEDULE_END       = 0x5F,
-            TABLE_EIT_OTHER_SCHEDULE_START      = 0x60,
-            TABLE_EIT_OTHER_SCHEDULE_END        = 0x6F,
-            TABLE_TDT                           = 0x70,
-            TABLE_RST                           = 0x71,
-            TABLE_STUFFING                      = 0x72,
-            TABLE_TOT                           = 0x73,
-            TABLE_APP_INFO                      = 0x74,
-            TABLE_CONTAINER                     = 0x75,
-            TABLE_RELATED_CONTENT               = 0x76,
-            TABLE_CONTENT                       = 0x77,
-            TABLE_MPE_FEC                       = 0x78,
-            TABLE_RESOLUTION_NOTIFICATION       = 0x79,
-            TABLE_MPE_IFEC                      = 0x7A,
-            TABLE_DISCONTINUITY_INFO            = 0x7E,
-            TABLE_SELECTION_INFO                = 0x7F,
-            TABLE_DVB_USER_DEFINED_START        = 0x80,
-            TABLE_DVB_USER_DEFINED_END          = 0xFE,
-            TABLE_13818_1_USER_PRIVATE_START    = 0x40,
-            TABLE_13818_1_USER_PRIVATE_END      = 0xFE,
-            TABLE_FORBIDDEN                     = 0xFF
-        };
-
     private:
         uint8_t* start;
         uint8_t pointerField;
@@ -188,70 +146,6 @@ class CatSection : public PsiSectionCommon
 class PmtSection : public PsiSectionCommon
 {
     public:
-        enum
-        {
-            STREAM_TYPE_RESERVED                        = 0x00,
-            STREAM_TYPE_11172_VIDEO                     = 0x01,
-            STREAM_TYPE_13818_2_VIDEO                   = 0x02,
-            STREAM_TYPE_11172_AUDIO                     = 0x03,
-            STREAM_TYPE_13818_3_AUDIO                   = 0x04,
-            STREAM_TYPE_13818_1_PRIVATE_SECTIONS        = 0x05,
-            STREAM_TYPE_13818_1_PES_PRIVATE_DATA        = 0x06,
-            STREAM_TYPE_13522_MHEG                      = 0x07,
-            STREAM_TYPE_13818_1_DSMCC                   = 0x08,
-            // Auxillary
-            STREAM_TYPE_H222_1                          = 0x09,
-            // Multi protocol encapsulation
-            STREAM_TYPE_13818_6_TYPE_A                  = 0x0A,
-            // DSM-CC U-N messages
-            STREAM_TYPE_13818_6_TYPE_B                  = 0x0B,
-            // Stream descriptors
-            STREAM_TYPE_13818_6_TYPE_C                  = 0x0C,
-            // Sections
-            STREAM_TYPE_13818_6_TYPE_D                  = 0x0D,
-            STREAM_TYPE_13818_1_AUX                     = 0x0E,
-            STREAM_TYPE_13818_7_AAC_ADTS                = 0x0F,
-            STREAM_TYPE_14496_2_VIDEO                   = 0x10,
-            STREAM_TYPE_14496_3_AAC_LATM                = 0x11,
-            STREAM_TYPE_14496_1_FLEXMUX_PES             = 0x12,
-            STREAM_TYPE_14496_1_FLEXMUX_SECTIONS        = 0x13,
-            STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL  = 0x14,
-            STREAM_TYPE_14496_10_VIDEO                  = 0x1b,
-            // Chinese standard
-            STREAM_TYPE_AVS_VIDEO                       = 0x42,
-            // 0x80 can also be LPCM audio
-            STREAM_TYPE_DC_II_VIDEO                     = 0x80,
-            STREAM_TYPE_A52_AC3_AUDIO                   = 0x81,
-            // 0x82 can also be DVD SPU subtitles
-            STREAM_TYPE_HDMV_DTS_AUDIO                  = 0x82,
-            // 0x83 can be either LPCM or BD TrueHD
-            STREAM_TYPE_LPCM_AUDIO                      = 0x83,
-            // 0x84 can be either SDDS or E-AC-3 audio
-            STREAM_TYPE_SDDS_AUDIO                      = 0x84,
-            // 0x85 can also be DTS HD HR Audio
-            STREAM_TYPE_ATSC_PROGRAM_ID                 = 0x85,
-            STREAM_TYPE_DTS_HD_MASTER_AUDIO             = 0x86,
-            STREAM_TYPE_E_AC3_AUDIO                     = 0x87,
-            STREAM_TYPE_DTS_AUDIO                       = 0x8A,
-            STREAM_TYPE_PGS_SUBTITLE                    = 0x90,
-            // 0x91 can also be BD Interactive Graphics Stream
-            STREAM_TYPE_A52B_AC3_AUDIO                  = 0x91,
-            STREAM_TYPE_DVD_SPU_VLS_SUBTITLE            = 0x92,
-            STREAM_TYPE_SDDS_AUDIO_2                    = 0x94,
-            STREAM_TYPE_MSCODEC_VIDEO                   = 0xA0,
-            // BD E-AC3 secondary audio
-            STREAM_TYPE_E_AC3_SECONDARY_AUDIO           = 0xA1,
-            // BD DTS-HD secondary audio
-            STREAM_TYPE_DTS_HD_SECONDARY_AUDIO          = 0xA2,
-            // VC-1 advanced profile
-            STREAM_TYPE_VC_1_AP                         = 0xEA,
-            // VC-1 Simple and main profile
-            STREAM_TYPE_VC_1_SMP                        = 0xEB,
-            STREAM_TYPE_13818_1_RESERVED_START          = 0x15,
-            STREAM_TYPE_13818_1_RESERVED_END            = 0x7F,
-            STREAM_TYPE_USER_PRIVATE_START              = 0x80,
-            STREAM_TYPE_USER_PRIVATE_END                = 0xFF
-        };
         struct StreamInfo
         {
             uint8_t streamType;
@@ -451,12 +345,12 @@ inline bool PsiSectionCommon::isCompleteSection()
 
 inline void PatSection::parse(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_PAT);
+    this->PsiSectionCommon::parse(data, size, MpegConstants::TABLE_PAT);
 }
 
 inline void PatSection::append(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_PAT);
+    this->PsiSectionCommon::append(data, size, MpegConstants::TABLE_PAT);
 }
 
 inline uint16_t PatSection::getTransportStreamId()
@@ -476,12 +370,12 @@ inline uint16_t PatSection::getNetworkPid()
 
 inline void PmtSection::parse(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_PMT);
+    this->PsiSectionCommon::parse(data, size, MpegConstants::TABLE_PMT);
 }
 
 inline void PmtSection::append(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_PMT);
+    this->PsiSectionCommon::append(data, size, MpegConstants::TABLE_PMT);
 }
 
 inline uint16_t PmtSection::getProgramNumber()
@@ -506,12 +400,12 @@ inline const PmtSection::StreamList& PmtSection::getStreamList()
 
 inline void CatSection::parse(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_CAT);
+    this->PsiSectionCommon::parse(data, size, MpegConstants::TABLE_CAT);
 }
 
 inline void CatSection::append(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_CAT);
+    this->PsiSectionCommon::append(data, size, MpegConstants::TABLE_CAT);
 }
 
 inline const PsiDescriptor& CatSection::getDescriptor()
@@ -521,12 +415,12 @@ inline const PsiDescriptor& CatSection::getDescriptor()
 
 inline void TsdtSection::parse(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::parse(data, size, PsiSection::TABLE_TSDT);
+    this->PsiSectionCommon::parse(data, size, MpegConstants::TABLE_TSDT);
 }
 
 inline void TsdtSection::append(uint8_t* data, uint16_t size)
 {
-    this->PsiSectionCommon::append(data, size, PsiSection::TABLE_TSDT);
+    this->PsiSectionCommon::append(data, size, MpegConstants::TABLE_TSDT);
 }
 
 inline const PsiDescriptor& TsdtSection::getDescriptor()

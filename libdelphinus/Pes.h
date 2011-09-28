@@ -28,31 +28,6 @@
 
 class PesPacket
 {
-    public:
-        enum {
-            STREAM_ID_PROGRAM_STREAM_MAP = 0xBC,
-            STREAM_ID_PRIVATE_1 = 0xBD,
-            STREAM_ID_PADDING = 0xBE,
-            STREAM_ID_PRIVATE_2 = 0xBF,
-            STREAM_ID_AUDIO_START = 0xC0,
-            STREAM_ID_AUDIO_END = 0xDF,
-            STREAM_ID_VIDEO_START = 0xE0,
-            STREAM_ID_VIDEO_END = 0xEF,
-            STREAM_ID_ECM = 0xF0,
-            STREAM_ID_EMM = 0xF1,
-            //TODO: find a better name
-            STREAM_ID_DSMCC_STREAM = 0xF2,
-            STREAM_ID_ISO_IEC_13522_STREAM = 0xF3,
-            STREAM_ID_H222_1_TYPE_A = 0xF4,
-            STREAM_ID_H222_1_TYPE_B = 0xF5,
-            STREAM_ID_H222_1_TYPE_C = 0xF6,
-            STREAM_ID_H222_1_TYPE_D = 0xF7,
-            STREAM_ID_H222_1_TYPE_E = 0xF8,
-            STREAM_ID_ANCILLARY = 0xF9,
-            STREAM_ID_SL_PACKETIZED = 0xFA,
-            STREAM_ID_FLEXMUX = 0xFB,
-            STREAM_ID_PROGRAM_STREAM_DIR = 0xFF
-        };
     private:
         bool isPes;
         uint8_t* start;

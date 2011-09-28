@@ -27,6 +27,8 @@
 #include <cassert>
 #include <cstring>
 
+using namespace MpegConstants;
+
 #define GET_LESS(x, y) ((x) < (y) ? (x) : (y))
 
 PsiSection::PsiSection()

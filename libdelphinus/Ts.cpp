@@ -25,6 +25,8 @@
 #include "Ts.h"
 #include <cstdio>
 
+using namespace MpegConstants;
+
 //#define DEBUG
 
 #ifdef DEBUG

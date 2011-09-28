@@ -33,7 +33,7 @@ objs = $(addprefix $(ARCH)/,$(sources:.cpp=.o))
 SOURCES := $(sources)
 TARGET = $(ARCH)/libdelphinus.so
 EXPORT_HEADERS_PREFIX_DIR := libdelphinus
-EXPORT_HEADERS := Ts.h TsFile.h Pes.h PsiTables.h
+EXPORT_HEADERS := Ts.h TsFile.h Pes.h PsiTables.h MpegConstants.h
 EXPORT_LIBS = $(TARGET)
 PRE_REQS := common
 
