@@ -324,7 +324,7 @@ help:
 	@echo -e "make local_clean  : Clean the targets but not the dependencies"
 	@echo -e "make clean        : Clean the targets and the dependencies"
 	@echo -e "make distclean    : Clean the targets, the dependencies and the dist directory(completely)"
-	@echo -e "make release      : Buidl the release tarballs (requires the codebase to be from an SVN repo)"
+	@echo -e "make release      : Create the release tarballs (requires the codebase to be from an SVN repo)"
 	@echo -e "make help         : Display this help message"
 
 
