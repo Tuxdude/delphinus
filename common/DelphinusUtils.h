@@ -22,13 +22,29 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  \file DelphinusUtils.h
+ *  \brief Set of utilities and helper methods.
+ *
+ *  Contains types, utility and helper methods that is used by the rest of
+ *  the Delphinus project.
+ *
+ */
+
 #ifndef DELPHINUS_DELPHINUS_UTILS_H
 #define DELPHINUS_DELPHINUS_UTILS_H
 
 #include <inttypes.h>
 
-// A byte field structure useful for accessing the individual bytes
-// of a binary bit field data structure
+/**
+ *
+ *  \brief A structure for accessing a binary data structure at byte level.
+ *  
+ *  A byte field structure useful for accessing the individual bytes
+ *  of a binary data structure. Individual bits than can be accessed by mask
+ *  and shift operations thereby providing an endian-ness portable way of
+ *  accessing bit fields.
+ */
 struct ByteField
 {
     uint8_t byte0;
