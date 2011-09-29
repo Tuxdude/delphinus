@@ -40,7 +40,6 @@
  *  PesPacket provides the means to access the various fields in the PES
  *  header as well as the payload.
  */
-
 class PesPacket
 {
     private:
@@ -53,7 +52,7 @@ class PesPacket
 
 /**
  *  \brief  Clear the current PesPacket handle. Memory is automatically
- *  dealloacted if it was allocated earlier for storing the data.
+ *          dealloacted if it was allocated earlier for storing the data.
  */
         void clear();
         // Always call parse to start the PES parsing
@@ -71,8 +70,6 @@ class PesPacket
  *          current PES length.
  */
         void parse(uint8_t* data);
-        // append the pes data to an already initialized Pes object
-        // which contains the payload preceding the current one
 /**
  *  \brief  Append the subsequent bytes of the PES to an existing partial PES
  *          which the PesPacket handle currently represents. appendPartialPes()
@@ -106,7 +103,6 @@ class PesPacket
  *  \return Stream ID field in the PES header.
  */
         uint8_t getStreamId();
-
 };
 
 #define PES_START_CODE_SHIFT_0          16

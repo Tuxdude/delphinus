@@ -42,7 +42,6 @@
  *  TsPacket provides the means to access the various fields in the Transport
  *  Stream packet header as well as the adaptation field and the payload.
  */
-
 class TsPacket
 {
     private:
@@ -196,7 +195,6 @@ class AdaptationField
  *  AdaptationField provides the means to access the various fields within the
  *  adaptation field extension of a TS Packet.
  */
-
 class AdaptationFieldExtension
 {
     private:

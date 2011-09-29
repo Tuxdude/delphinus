@@ -56,13 +56,9 @@
  */
 struct PsiDescriptor
 {
-/**
- *  \brief  Start address of the descriptor.
- */
+/**  Start address of the descriptor. */
     uint8_t* start;
-/**
- *  \brief  Size of the descriptor.
- */
+/**  Size of the descriptor. */
     uint16_t size;
 };
 
@@ -84,8 +80,9 @@ class PsiSection
 
 /**
  *  \brief  Parse the given data as a section.
- *          \note The first byte to be parsed should be the pointer field,
- *          i.e. the very first byte of the TS payload.
+ *  \param  data The start of the data to be parsed.
+ *          \note The first byte in data should be the pointer field, i.e.
+ *          the very first byte in the TsPacket payload.
  *  \return Is a valid section or not.
  */
         bool parse(uint8_t* data);
@@ -145,38 +142,90 @@ class PsiSection
 };
 
 /**
- *  \brief  PsiSectionCommon is the base class of all the standard sections.
+ *  \brief  Base class of all the standard sections.
+ *
+ *  PsiSectionCommon is the base class of all the standard sections and
+ *  provides helper methods to parse and validate sections easily.
  */
 class PsiSectionCommon
 {
     protected:
+/** The entire Section is complete or not. */
         bool isComplete;
+/** Start of the section data. */
         uint8_t* start;
+/** Length of the section excluding the section header bytes. */
         uint16_t sectionLength;
+/** Table ID Extension */
         uint16_t tableIdExtension;
+/** Size of the data currently in the buffer. */
         uint16_t validSize;
+/** Current Section Number */
         uint8_t currentSection;
+/** Section number of the last section to make the entire section complete. */
         uint8_t lastSection;
 
         PsiSectionCommon();
         virtual ~PsiSectionCommon();
+/**
+ *  \brief  The function to be called when parsing the section is successfull.
+ */
         virtual void onComplete() = 0;
+/**
+ *  \brief  Parse the given data as the start of a section with the given
+ *          tableId.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ *  \param  tableId The Table ID to be checked against in the section header.
+ */
         void parse(uint8_t* data, uint16_t size, uint8_t tableId);
+/**
+ *  \brief  Parse and append the given data as the subsequent section with
+ *          the given tableId.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ *  \param  tableId The Table ID to be checked against in the section header.
+ */
         void append(uint8_t* data, uint16_t size, uint8_t tableId);
 
     public:
+/**
+ *  \brief  Clear the section handle.
+ */
         void clear();
+/**
+ *  \brief  Check if the section is complete.
+ *  \return True if the section is complete, false otherwise.
+ */
         bool isCompleteSection();
 };
 
+/**
+ *  \brief  Represents a PAT section.
+ *
+ *  PatSection represents a PAT section and is used for parsing the PAT.
+ */
 class PatSection : public PsiSectionCommon
 {
     public:
+/**
+ *  \brief  Represents information about a single program.
+ */
         struct ProgramInfo
         {
+/** Program Number */
             uint16_t programNumber;
+/** PMT PID */
             uint16_t pmtPid;
         };
+/**
+ *  \brief  List of all programs, typically to represent the information
+ *          extracted from the PAT.
+ */
         typedef std::list<ProgramInfo> ProgramList;
 
     private:
@@ -189,14 +238,45 @@ class PatSection : public PsiSectionCommon
         PatSection();
         ~PatSection();
 
+/**
+ *  \brief  Parse the given data as the start of a PAT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void parse(uint8_t* data, uint16_t size);
+/**
+ *  \brief  Parse and append the given data as the subsequent PAT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void append(uint8_t* data, uint16_t size);
-
+/**
+ *  \brief  Get the Transport Stream ID from the PAT.
+ *  \return Transport Stream ID from the PAT.
+ */
         uint16_t getTransportStreamId();
+/**
+ *  \brief  Get the list of programs in the PAT.
+ *  \return List of programs in the PAT.
+ */
         const ProgramList& getPrograms();
+/**
+ *  \brief  Get the Newtork PID from the PAT
+ *  \return Network PID in the PAT if one exists, MpegConstants::PID_NULL
+ *          otherwise.
+ */
         uint16_t getNetworkPid();
 };
 
+/**
+ *  \brief  Represents a CAT section.
+ *
+ *  CatSection represents a CAT section and is used for parsing the CAT.
+ */
 class CatSection : public PsiSectionCommon
 {
     private:
@@ -208,22 +288,54 @@ class CatSection : public PsiSectionCommon
     public:
         CatSection();
         ~CatSection();
-
+/**
+ *  \brief  Parse the given data as the start of a CAT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void parse(uint8_t* data, uint16_t size);
+/**
+ *  \brief  Parse and append the given data as the subsequent CAT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void append(uint8_t* data, uint16_t size);
-
+/**
+ * \brief   Get the CA descriptor in the CAT section.
+ * \return  CA descriptor in the CAT section.
+ */
         const PsiDescriptor& getDescriptor();
 };
 
+/**
+ *  \brief  Represents a PMT section.
+ *
+ *  PmtSection represents a PMT section and is used for parsing the PMT.
+ */
 class PmtSection : public PsiSectionCommon
 {
     public:
+/**
+ *  \brief  Represents the information about a single stream in the PMT's
+ *          stream list.
+ */
         struct StreamInfo
         {
+/** 8-bit Stream Type */
             uint8_t streamType;
+/** 13-bit PID */
             uint16_t pid;
+/** Stream descriptor */
             PsiDescriptor descriptor;
         };
+/**
+ *  \brief  Represents the information about a set of streams typically to
+ *          represent the entire PMT's stream list.
+ */
         typedef std::list<StreamInfo> StreamList;
 
     private:
@@ -237,17 +349,56 @@ class PmtSection : public PsiSectionCommon
         PmtSection();
         ~PmtSection();
 
+/**
+ *  \brief  Get a string description for a given stream type.
+ *  \param  streamType 8-bit stream type value from the PMT.
+ *  \return Descriptive string of the stream type.
+ */
         static const char* getStreamTypeStr(uint8_t streamType);
-
+/**
+ *  \brief  Parse the given data as the start of a PMT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void parse(uint8_t* data, uint16_t size);
+/**
+ *  \brief  Parse and append the given data as the subsequent PMT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void append(uint8_t* data, uint16_t size);
 
+/**
+ *  \brief  Get the Program number corresponding to the PMT
+ *  \return 16-bit Program number.
+ */
         uint16_t getProgramNumber();
+/**
+ *  \brief  Get the PCR PID of the program from the PMT.
+ *  \return 13-bit PCR PID of the program.
+ */
         uint16_t getPcrPid();
+/**
+ *  \brief  Get the Program Information descriptor in the PMT.
+ *  \return Program Information Descriptor in the PMT.
+ */
         const PsiDescriptor& getProgramInfoDescriptor();
+/**
+ *  \brief  Get the list of all streams in the PMT.
+ *  \return Information about each of the streams in the PMT.
+ */
         const StreamList& getStreamList();
 };
 
+/**
+ *  \brief  Represents a TSDT section.
+ *
+ *  TsdtSection represents a TSDT section and is used for parsing the TSDT.
+ */
 class TsdtSection : public PsiSectionCommon
 {
     private:
@@ -259,22 +410,53 @@ class TsdtSection : public PsiSectionCommon
     public:
         TsdtSection();
         ~TsdtSection();
-
+/**
+ *  \brief  Parse the given data as the start of a TSDT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void parse(uint8_t* data, uint16_t size);
+/**
+ *  \brief  Parse and append the given data as the subsequent TSDT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void append(uint8_t* data, uint16_t size);
-
+/**
+ *  \brief  Get the TS descriptor in the TSDT section.
+ *  \return TS descriptor in the TSDT section.
+ */
         const PsiDescriptor& getDescriptor();
 };
 
+/**
+ *  \brief  Represents a TSDT section.
+ *
+ *  TsdtSection represents a TSDT section and is used for parsing the TSDT.
+ */
 class NitSection : public PsiSectionCommon
 {
     public:
+/**
+ *  \brief Individual TS info, typically gathered from the NIT section. 
+ */
         struct TsInfo
         {
+/** Transport Stream ID.  */
             uint16_t transportStreamId;
+/** Original Network ID. */
             uint16_t originalNetworkId;
+/** Transport Descriptor. */
             PsiDescriptor transportDescriptor;
         };
+/**
+ *  \brief  A list of information about multiple Transport Streams, typically
+ *          gathered from the NIT section.
+ */
         typedef std::list<TsInfo> TsInfoList;
 
     private:
@@ -287,12 +469,38 @@ class NitSection : public PsiSectionCommon
     public:
         NitSection();
         ~NitSection();
-
+/**
+ *  \brief  Parse the given data as the start of a PAT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void parse(uint8_t* data, uint16_t size);
+/**
+ *  \brief  Parse and append the given data as the subsequent PAT section.
+ *  \param  data Start of the data to parse.
+ *  \param  size The maximum size of the data that should be parsed.
+ *          Useful when there are subsequent sections in which the
+ *          data for the table continues in.
+ */
         void append(uint8_t* data, uint16_t size);
 
+/**
+ *  \brief  Get the Network ID in the NIT section.
+ *  \return 16-bit Network ID in the NIT section.
+ */
         uint16_t getNetworkId();
+/**
+ *  \brief  Get the Network descriptor in the NIT section.
+ *  \return Network descriptor in the NIT section.
+ */
         const PsiDescriptor& getNetworkDescriptor();
+/**
+ *  \brief  Get the information about all the Transport Streams from the
+ *          NIT section.
+ *  \return Information about all the Transport streams from the NIT section.
+ */
         const TsInfoList& getTsInfoList();
 };
 

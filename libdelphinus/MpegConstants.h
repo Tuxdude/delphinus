@@ -48,30 +48,48 @@ namespace MpegConstants
  */
     enum TsPacketSize
     {
-            PACKET_SIZE_TS              = 188,
-            PACKET_SIZE_TTS             = 192
+        /** 188 bytes TS Packet */
+        PACKET_SIZE_TS              = 188,
+        /** 192 bytes TTS Packet */
+        PACKET_SIZE_TTS             = 192
     };
 
 /**
+ *  \public
  *  \brief  Constants for standard PID values.
  */
     enum Pid
     {
-            PID_PAT                     = 0x0000,
-            PID_CAT                     = 0x0001,
-            PID_TSDT                    = 0x0002,
-            PID_NIT_ST                  = 0x0010,
-            PID_SDT_BAT_ST              = 0x0011,
-            PID_EIT_CIT_ST              = 0x0012,
-            PID_RST_ST                  = 0x0013,
-            PID_TDT_TOT_ST              = 0x0014,
-            PID_NETWORK_SYNC            = 0x0015,
-            PID_RNT                     = 0x0016,
-            PID_INBAND_SIGNALLING       = 0x001C,
-            PID_MEASUREMENT             = 0x001D,
-            PID_DIT                     = 0x001E,
-            PID_SIT                     = 0x001F,
-            PID_NULL                    = 0x1FFF
+/** PAT PID */
+        PID_PAT                     = 0x0000,
+/** CAT PID */
+        PID_CAT                     = 0x0001,
+/** TSDT PID */
+        PID_TSDT                    = 0x0002,
+/** NIT PID */
+        PID_NIT                     = 0x0010,
+/** BAT PID */
+        PID_SDT_BAT                 = 0x0011,
+/** EIT/CIT PID */
+        PID_EIT_CIT                 = 0x0012,
+/** RST PID */
+        PID_RST                     = 0x0013,
+/** TDT/TOT PID */
+        PID_TDT_TOT                 = 0x0014,
+/** Network Synchronization PID */
+        PID_NETWORK_SYNC            = 0x0015,
+/** RNT PID */
+        PID_RNT                     = 0x0016,
+/** Inband signalling PID */
+        PID_INBAND_SIGNALLING       = 0x001C,
+/** Measurement PID */
+        PID_MEASUREMENT             = 0x001D,
+/** DIT PID */
+        PID_DIT                     = 0x001E,
+/** SIT PID */
+        PID_SIT                     = 0x001F,
+/** NULL PID */
+        PID_NULL                    = 0x1FFF
     };
 
 /**
@@ -79,28 +97,28 @@ namespace MpegConstants
  */
     enum PesStreamId
     {
-            STREAM_ID_PROGRAM_STREAM_MAP = 0xBC,
-            STREAM_ID_PRIVATE_1 = 0xBD,
-            STREAM_ID_PADDING = 0xBE,
-            STREAM_ID_PRIVATE_2 = 0xBF,
-            STREAM_ID_AUDIO_START = 0xC0,
-            STREAM_ID_AUDIO_END = 0xDF,
-            STREAM_ID_VIDEO_START = 0xE0,
-            STREAM_ID_VIDEO_END = 0xEF,
-            STREAM_ID_ECM = 0xF0,
-            STREAM_ID_EMM = 0xF1,
-            //TODO: find a better name
-            STREAM_ID_DSMCC_STREAM = 0xF2,
-            STREAM_ID_ISO_IEC_13522_STREAM = 0xF3,
-            STREAM_ID_H222_1_TYPE_A = 0xF4,
-            STREAM_ID_H222_1_TYPE_B = 0xF5,
-            STREAM_ID_H222_1_TYPE_C = 0xF6,
-            STREAM_ID_H222_1_TYPE_D = 0xF7,
-            STREAM_ID_H222_1_TYPE_E = 0xF8,
-            STREAM_ID_ANCILLARY = 0xF9,
-            STREAM_ID_SL_PACKETIZED = 0xFA,
-            STREAM_ID_FLEXMUX = 0xFB,
-            STREAM_ID_PROGRAM_STREAM_DIR = 0xFF
+        STREAM_ID_PROGRAM_STREAM_MAP    = 0xBC,
+        STREAM_ID_PRIVATE_1             = 0xBD,
+        STREAM_ID_PADDING               = 0xBE,
+        STREAM_ID_PRIVATE_2             = 0xBF,
+        STREAM_ID_AUDIO_START           = 0xC0,
+        STREAM_ID_AUDIO_END             = 0xDF,
+        STREAM_ID_VIDEO_START           = 0xE0,
+        STREAM_ID_VIDEO_END             = 0xEF,
+        STREAM_ID_ECM                   = 0xF0,
+        STREAM_ID_EMM                   = 0xF1,
+        //TODO: find a better name
+        STREAM_ID_DSMCC_STREAM          = 0xF2,
+        STREAM_ID_ISO_IEC_13522_STREAM  = 0xF3,
+        STREAM_ID_H222_1_TYPE_A         = 0xF4,
+        STREAM_ID_H222_1_TYPE_B         = 0xF5,
+        STREAM_ID_H222_1_TYPE_C         = 0xF6,
+        STREAM_ID_H222_1_TYPE_D         = 0xF7,
+        STREAM_ID_H222_1_TYPE_E         = 0xF8,
+        STREAM_ID_ANCILLARY             = 0xF9,
+        STREAM_ID_SL_PACKETIZED         = 0xFA,
+        STREAM_ID_FLEXMUX               = 0xFB,
+        STREAM_ID_PROGRAM_STREAM_DIR    = 0xFF
     };
 
 /**
@@ -108,67 +126,67 @@ namespace MpegConstants
  */
     enum PmtStreamType
     {
-            STREAM_TYPE_RESERVED                        = 0x00,
-            STREAM_TYPE_11172_VIDEO                     = 0x01,
-            STREAM_TYPE_13818_2_VIDEO                   = 0x02,
-            STREAM_TYPE_11172_AUDIO                     = 0x03,
-            STREAM_TYPE_13818_3_AUDIO                   = 0x04,
-            STREAM_TYPE_13818_1_PRIVATE_SECTIONS        = 0x05,
-            STREAM_TYPE_13818_1_PES_PRIVATE_DATA        = 0x06,
-            STREAM_TYPE_13522_MHEG                      = 0x07,
-            STREAM_TYPE_13818_1_DSMCC                   = 0x08,
-            // Auxillary
-            STREAM_TYPE_H222_1                          = 0x09,
-            // Multi protocol encapsulation
-            STREAM_TYPE_13818_6_TYPE_A                  = 0x0A,
-            // DSM-CC U-N messages
-            STREAM_TYPE_13818_6_TYPE_B                  = 0x0B,
-            // Stream descriptors
-            STREAM_TYPE_13818_6_TYPE_C                  = 0x0C,
-            // Sections
-            STREAM_TYPE_13818_6_TYPE_D                  = 0x0D,
-            STREAM_TYPE_13818_1_AUX                     = 0x0E,
-            STREAM_TYPE_13818_7_AAC_ADTS                = 0x0F,
-            STREAM_TYPE_14496_2_VIDEO                   = 0x10,
-            STREAM_TYPE_14496_3_AAC_LATM                = 0x11,
-            STREAM_TYPE_14496_1_FLEXMUX_PES             = 0x12,
-            STREAM_TYPE_14496_1_FLEXMUX_SECTIONS        = 0x13,
-            STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL  = 0x14,
-            STREAM_TYPE_14496_10_VIDEO                  = 0x1b,
-            // Chinese standard
-            STREAM_TYPE_AVS_VIDEO                       = 0x42,
-            // 0x80 can also be LPCM audio
-            STREAM_TYPE_DC_II_VIDEO                     = 0x80,
-            STREAM_TYPE_A52_AC3_AUDIO                   = 0x81,
-            // 0x82 can also be DVD SPU subtitles
-            STREAM_TYPE_HDMV_DTS_AUDIO                  = 0x82,
-            // 0x83 can be either LPCM or BD TrueHD
-            STREAM_TYPE_LPCM_AUDIO                      = 0x83,
-            // 0x84 can be either SDDS or E-AC-3 audio
-            STREAM_TYPE_SDDS_AUDIO                      = 0x84,
-            // 0x85 can also be DTS HD HR Audio
-            STREAM_TYPE_ATSC_PROGRAM_ID                 = 0x85,
-            STREAM_TYPE_DTS_HD_MASTER_AUDIO             = 0x86,
-            STREAM_TYPE_E_AC3_AUDIO                     = 0x87,
-            STREAM_TYPE_DTS_AUDIO                       = 0x8A,
-            STREAM_TYPE_PGS_SUBTITLE                    = 0x90,
-            // 0x91 can also be BD Interactive Graphics Stream
-            STREAM_TYPE_A52B_AC3_AUDIO                  = 0x91,
-            STREAM_TYPE_DVD_SPU_VLS_SUBTITLE            = 0x92,
-            STREAM_TYPE_SDDS_AUDIO_2                    = 0x94,
-            STREAM_TYPE_MSCODEC_VIDEO                   = 0xA0,
-            // BD E-AC3 secondary audio
-            STREAM_TYPE_E_AC3_SECONDARY_AUDIO           = 0xA1,
-            // BD DTS-HD secondary audio
-            STREAM_TYPE_DTS_HD_SECONDARY_AUDIO          = 0xA2,
-            // VC-1 advanced profile
-            STREAM_TYPE_VC_1_AP                         = 0xEA,
-            // VC-1 Simple and main profile
-            STREAM_TYPE_VC_1_SMP                        = 0xEB,
-            STREAM_TYPE_13818_1_RESERVED_START          = 0x15,
-            STREAM_TYPE_13818_1_RESERVED_END            = 0x7F,
-            STREAM_TYPE_USER_PRIVATE_START              = 0x80,
-            STREAM_TYPE_USER_PRIVATE_END                = 0xFF
+        STREAM_TYPE_RESERVED                        = 0x00,
+        STREAM_TYPE_11172_VIDEO                     = 0x01,
+        STREAM_TYPE_13818_2_VIDEO                   = 0x02,
+        STREAM_TYPE_11172_AUDIO                     = 0x03,
+        STREAM_TYPE_13818_3_AUDIO                   = 0x04,
+        STREAM_TYPE_13818_1_PRIVATE_SECTIONS        = 0x05,
+        STREAM_TYPE_13818_1_PES_PRIVATE_DATA        = 0x06,
+        STREAM_TYPE_13522_MHEG                      = 0x07,
+        STREAM_TYPE_13818_1_DSMCC                   = 0x08,
+        // Auxillary
+        STREAM_TYPE_H222_1                          = 0x09,
+        // Multi protocol encapsulation
+        STREAM_TYPE_13818_6_TYPE_A                  = 0x0A,
+        // DSM-CC U-N messages
+        STREAM_TYPE_13818_6_TYPE_B                  = 0x0B,
+        // Stream descriptors
+        STREAM_TYPE_13818_6_TYPE_C                  = 0x0C,
+        // Sections
+        STREAM_TYPE_13818_6_TYPE_D                  = 0x0D,
+        STREAM_TYPE_13818_1_AUX                     = 0x0E,
+        STREAM_TYPE_13818_7_AAC_ADTS                = 0x0F,
+        STREAM_TYPE_14496_2_VIDEO                   = 0x10,
+        STREAM_TYPE_14496_3_AAC_LATM                = 0x11,
+        STREAM_TYPE_14496_1_FLEXMUX_PES             = 0x12,
+        STREAM_TYPE_14496_1_FLEXMUX_SECTIONS        = 0x13,
+        STREAM_TYPE_13818_6_SYNC_DOWNLOAD_PROTOCOL  = 0x14,
+        STREAM_TYPE_14496_10_VIDEO                  = 0x1b,
+        // Chinese standard
+        STREAM_TYPE_AVS_VIDEO                       = 0x42,
+        // 0x80 can also be LPCM audio
+        STREAM_TYPE_DC_II_VIDEO                     = 0x80,
+        STREAM_TYPE_A52_AC3_AUDIO                   = 0x81,
+        // 0x82 can also be DVD SPU subtitles
+        STREAM_TYPE_HDMV_DTS_AUDIO                  = 0x82,
+        // 0x83 can be either LPCM or BD TrueHD
+        STREAM_TYPE_LPCM_AUDIO                      = 0x83,
+        // 0x84 can be either SDDS or E-AC-3 audio
+        STREAM_TYPE_SDDS_AUDIO                      = 0x84,
+        // 0x85 can also be DTS HD HR Audio
+        STREAM_TYPE_ATSC_PROGRAM_ID                 = 0x85,
+        STREAM_TYPE_DTS_HD_MASTER_AUDIO             = 0x86,
+        STREAM_TYPE_E_AC3_AUDIO                     = 0x87,
+        STREAM_TYPE_DTS_AUDIO                       = 0x8A,
+        STREAM_TYPE_PGS_SUBTITLE                    = 0x90,
+        // 0x91 can also be BD Interactive Graphics Stream
+        STREAM_TYPE_A52B_AC3_AUDIO                  = 0x91,
+        STREAM_TYPE_DVD_SPU_VLS_SUBTITLE            = 0x92,
+        STREAM_TYPE_SDDS_AUDIO_2                    = 0x94,
+        STREAM_TYPE_MSCODEC_VIDEO                   = 0xA0,
+        // BD E-AC3 secondary audio
+        STREAM_TYPE_E_AC3_SECONDARY_AUDIO           = 0xA1,
+        // BD DTS-HD secondary audio
+        STREAM_TYPE_DTS_HD_SECONDARY_AUDIO          = 0xA2,
+        // VC-1 advanced profile
+        STREAM_TYPE_VC_1_AP                         = 0xEA,
+        // VC-1 Simple and main profile
+        STREAM_TYPE_VC_1_SMP                        = 0xEB,
+        STREAM_TYPE_13818_1_RESERVED_START          = 0x15,
+        STREAM_TYPE_13818_1_RESERVED_END            = 0x7F,
+        STREAM_TYPE_USER_PRIVATE_START              = 0x80,
+        STREAM_TYPE_USER_PRIVATE_END                = 0xFF
     };
 
 /**
@@ -176,45 +194,45 @@ namespace MpegConstants
  */
     enum PsiTableId
     {
-            TABLE_PAT                           = 0x00,
-            TABLE_CAT                           = 0x01,
-            TABLE_PMT                           = 0x02,
-            TABLE_TSDT                          = 0x03,
-            TABLE_SCENE_DESCRIPTION             = 0x04,
-            TABLE_OBJECT_DESCRIPTION            = 0x05,
-            TABLE_13818_1_RESERVED_START        = 0x06,
-            TABLE_13818_1_RESERVED_END          = 0x37,
-            TABLE_13818_6_START                 = 0x38,
-            TABLE_13818_6_END                   = 0x3F,
-            TABLE_NETWORK_INFO_ACTUAL           = 0x40,
-            TABLE_NETWORK_INFO_OTHER            = 0x41,
-            TABLE_SERVICE_DESCRIPTION_ACTUAL    = 0x42,
-            TABLE_SERVICE_DESCRIPTION_OTHER     = 0x46,
-            TABLE_BAT                           = 0x4A,
-            TABLE_EIT_ACTUAL_PRESENT_FOLLOWING  = 0x4E,
-            TABLE_EIT_OTHER_PRESENT_FOLLOWING   = 0x4F,
-            TABLE_EIT_ACTUAL_SCHEDULE_START     = 0x50,
-            TABLE_EIT_ACTUAL_SCHEDULE_END       = 0x5F,
-            TABLE_EIT_OTHER_SCHEDULE_START      = 0x60,
-            TABLE_EIT_OTHER_SCHEDULE_END        = 0x6F,
-            TABLE_TDT                           = 0x70,
-            TABLE_RST                           = 0x71,
-            TABLE_STUFFING                      = 0x72,
-            TABLE_TOT                           = 0x73,
-            TABLE_APP_INFO                      = 0x74,
-            TABLE_CONTAINER                     = 0x75,
-            TABLE_RELATED_CONTENT               = 0x76,
-            TABLE_CONTENT                       = 0x77,
-            TABLE_MPE_FEC                       = 0x78,
-            TABLE_RESOLUTION_NOTIFICATION       = 0x79,
-            TABLE_MPE_IFEC                      = 0x7A,
-            TABLE_DISCONTINUITY_INFO            = 0x7E,
-            TABLE_SELECTION_INFO                = 0x7F,
-            TABLE_DVB_USER_DEFINED_START        = 0x80,
-            TABLE_DVB_USER_DEFINED_END          = 0xFE,
-            TABLE_13818_1_USER_PRIVATE_START    = 0x40,
-            TABLE_13818_1_USER_PRIVATE_END      = 0xFE,
-            TABLE_FORBIDDEN                     = 0xFF
+        TABLE_PAT                           = 0x00,
+        TABLE_CAT                           = 0x01,
+        TABLE_PMT                           = 0x02,
+        TABLE_TSDT                          = 0x03,
+        TABLE_SCENE_DESCRIPTION             = 0x04,
+        TABLE_OBJECT_DESCRIPTION            = 0x05,
+        TABLE_13818_1_RESERVED_START        = 0x06,
+        TABLE_13818_1_RESERVED_END          = 0x37,
+        TABLE_13818_6_START                 = 0x38,
+        TABLE_13818_6_END                   = 0x3F,
+        TABLE_NETWORK_INFO_ACTUAL           = 0x40,
+        TABLE_NETWORK_INFO_OTHER            = 0x41,
+        TABLE_SERVICE_DESCRIPTION_ACTUAL    = 0x42,
+        TABLE_SERVICE_DESCRIPTION_OTHER     = 0x46,
+        TABLE_BAT                           = 0x4A,
+        TABLE_EIT_ACTUAL_PRESENT_FOLLOWING  = 0x4E,
+        TABLE_EIT_OTHER_PRESENT_FOLLOWING   = 0x4F,
+        TABLE_EIT_ACTUAL_SCHEDULE_START     = 0x50,
+        TABLE_EIT_ACTUAL_SCHEDULE_END       = 0x5F,
+        TABLE_EIT_OTHER_SCHEDULE_START      = 0x60,
+        TABLE_EIT_OTHER_SCHEDULE_END        = 0x6F,
+        TABLE_TDT                           = 0x70,
+        TABLE_RST                           = 0x71,
+        TABLE_STUFFING                      = 0x72,
+        TABLE_TOT                           = 0x73,
+        TABLE_APP_INFO                      = 0x74,
+        TABLE_CONTAINER                     = 0x75,
+        TABLE_RELATED_CONTENT               = 0x76,
+        TABLE_CONTENT                       = 0x77,
+        TABLE_MPE_FEC                       = 0x78,
+        TABLE_RESOLUTION_NOTIFICATION       = 0x79,
+        TABLE_MPE_IFEC                      = 0x7A,
+        TABLE_DISCONTINUITY_INFO            = 0x7E,
+        TABLE_SELECTION_INFO                = 0x7F,
+        TABLE_DVB_USER_DEFINED_START        = 0x80,
+        TABLE_DVB_USER_DEFINED_END          = 0xFE,
+        TABLE_13818_1_USER_PRIVATE_START    = 0x40,
+        TABLE_13818_1_USER_PRIVATE_END      = 0xFE,
+        TABLE_FORBIDDEN                     = 0xFF
     };
 
 /**

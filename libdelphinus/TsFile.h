@@ -45,7 +45,6 @@
  *  also parses the PAT, PMT and other standard tables present in the TS and
  *  populates the metadata on opening the file.
  */
-
 class TsFile
 {
     public:
@@ -54,17 +53,11 @@ class TsFile
  */
         struct PatInfo
         {
-/**
- *  \brief  Packet number(starts at 0) in the TS file where the PAT was located.
- */
+/** Packet number(starts at 0) in the TS file where the PAT was located. */
             uint64_t packetNumber;
-/**
- *  \brief  Transport Stream ID mentioned in the PAT.
- */
+/** Transport Stream ID mentioned in the PAT. */
             uint16_t transportStreamId;
-/**
- *  \brief  List of all the programs mentioned in the PAT.
- */
+/** List of all the programs mentioned in the PAT. */
             PatSection::ProgramList programList;
         };
 /**
@@ -72,25 +65,15 @@ class TsFile
  */
         struct PmtInfo
         {
-/**
- *  \brief  Packet number(starts at 0) in the TS file where the PMT was located.
- */
+/** Packet number(starts at 0) in the TS file where the PMT was located. */
             uint64_t packetNumber;
-/**
- *  \brief  PMT PID.
- */
+/** PMT PID. */
             uint16_t pmtPid;
-/**
- *  \brief  Program number mentioned in the PMT.
- */
+/** Program number mentioned in the PMT. */
             uint16_t programNumber;
-/**
- *  \brief  PCR PID of the program mentioned in the PMT.
- */
+/** PCR PID of the program mentioned in the PMT. */
             uint16_t pcrPid;
-/**
- *  \brief  List of all the streams mentioned in the PMT.
- */
+/** List of all the streams mentioned in the PMT. */
             PmtSection::StreamList streamList;
         };
 /**
