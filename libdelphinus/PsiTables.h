@@ -51,12 +51,27 @@
 // Last section number          8
 // Data
 
+/**
+ *  \brief  PsiDescriptor represents a descriptor.
+ */
 struct PsiDescriptor
 {
+/**
+ *  \brief  Start address of the descriptor.
+ */
     uint8_t* start;
+/**
+ *  \brief  Size of the descriptor.
+ */
     uint16_t size;
 };
 
+/**
+ *  \brief  PsiSection represents a standard section.
+ *
+ *  PsiSection is used to parse a standard section, and get the various
+ *  fields in the section header.
+ */
 class PsiSection
 {
     private:
@@ -67,23 +82,71 @@ class PsiSection
         PsiSection();
         ~PsiSection();
 
-        //Note: the first byte to parse should be the pointer field
-        //i.e. the first byte of the payload
+/**
+ *  \brief  Parse the given data as a section.
+ *          \note The first byte to be parsed should be the pointer field,
+ *          i.e. the very first byte of the TS payload.
+ *  \return Is a valid section or not.
+ */
         bool parse(uint8_t* data);
+/**
+ *  \brief  Get the value of the pointer field in the TS payload.
+ *  \return Value of the Pointer field.
+ */
         uint8_t getPointerField();
+/**
+ *  \brief  Get the offset of the actual section data from the start of the
+ *          payload.
+ *  \return Offset in bytes from the start of the payload.
+ */
         uint8_t getDataOffset();
+/**
+ *  \brief  Get the Table ID field in the section header.
+ *  \return 8-bit Table ID field in the section header.
+ */
         uint8_t getTableId();
+/**
+ *  \brief  Get the length field in the section header.
+ *  \return 16-bit length field in the section header.
+ */
         uint16_t getLength();
+/**
+ *  \brief  Get the Table ID Extension field in the section header.
+ *  \return 16-bit Table ID Extension field in the section header.
+ */
         uint16_t getTableIdExtension();
+/**
+ *  \brief  Get the version number field in the section header.
+ *  \return 5-bit version number field in the section header.
+ */
         uint8_t getVersionNumber();
+/**
+ *  \brief  Get the Current Next Indicator flag in the section header.
+ *  \return Current Next Indicator flag in the section header..
+ */
         bool getCurrentNextIndicator();
+/**
+ *  \brief  Get the Section Number field in the section header.
+ *  \return 8-bit Section Number field in the section header.
+ */
         uint8_t getSectionNumber();
+/**
+ *  \brief  Get the Last Section Number field in the section header.
+ *  \return 8-bit Last Section Number field in the section header.
+ */
         uint8_t getLastSectionNumber();
+/**
+ *  \brief  Get the data bytes in the section.
+ *  \return Address of the start of the data.
+ */
         uint8_t* getData();
 
         friend class PsiSectionCommon;
 };
 
+/**
+ *  \brief  PsiSectionCommon is the base class of all the standard sections.
+ */
 class PsiSectionCommon
 {
     protected:
