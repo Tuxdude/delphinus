@@ -201,6 +201,7 @@ $(BUILD_DIR)/%.o: %.c
 	$(silent)$(GENERATE_DEP_FILES)
 	$(silent)$(CC) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
+# Rules for building/cleaning only the current dir
 local_all: $(TARGET)
 
 local_clean:
@@ -220,7 +221,7 @@ ifneq ($(ONLY_BUILD_ARCHS),)
     BUILD_ARCHS := $(filter $(ONLY_BUILD_ARCHS),$(BUILD_ARCHS))
 endif
 
-# Directories to create and cleanup
+# Directories to create
 EXPORT_HEADERS_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch)/include)
 ifneq ($(EXPORT_HEADERS_PREFIX_DIR),)
     EXPORT_HEADERS_DIRS += $(foreach build_arch,$(BUILD_ARCHS),$(EXPORT_BASE_DIR)/$(build_arch)/include/$(EXPORT_HEADERS_PREFIX_DIR))
@@ -237,6 +238,7 @@ $(shell $(MKDIR) $(DIRS_TO_CREATE))
 BUILD_DIRS := $(BUILD_ARCHS)
 DEP_DIRS := $(foreach build_arch,$(BUILD_ARCHS),$(build_arch)/.dep)
 
+# Rules for building for all the required architectures
 __local_all_archs := $(foreach build_arch,$(BUILD_ARCHS),.local_all__$(build_arch))
 __local_clean_archs := $(foreach build_arch,$(BUILD_ARCHS),.local_clean__$(build_arch))
 
@@ -253,8 +255,6 @@ local_clean: $(__local_clean_archs)
 .local_clean__%:
 	$(silent)ARCH=$(ARCH) $(MAKE) local_clean
 
-distclean: local_clean
-
 # Make sure .prereqs is the first
 ifneq ($(PRE_REQS),)
 all: .prereqs
@@ -267,17 +267,15 @@ all: .prereqs
 
 clean:
 	$(silent)for dir in $(PRE_REQS);\
-	    do $(MAKE) -C $(BASE_DIR)/$${dir} distclean;\
+	    do $(MAKE) -C $(BASE_DIR)/$${dir} clean;\
             if [ $$? -ne 0 ]; then exit 1; fi\
 	    done
+endif
+
+clean: local_clean
 
 distclean: clean
 	$(silent)$(RM_RECURSIVE) $(call reverse,$(DIRS_TO_CREATE))
-
-else
-distclean:
-	$(silent)$(RM_RECURSIVE) $(call reverse,$(DIRS_TO_CREATE))
-endif
 
 all: local_all
 
@@ -289,7 +287,8 @@ $(CLEANUP_TRIGGER): $(BASE_MAKEFILE)
 #End ARCH is not set
 endif
 
-# Settings for the release
+ifeq ($(BASE_DIR),.)
+# Settings for the release - it can be done only from the root of the tree
 RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
 ifeq ($(MAKECMDGOALS),release)
     SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
@@ -302,9 +301,8 @@ endif
 
 # The target release only builds if the entire build goes through although it
 # doesn't require any files to be exported from the build itself
-release:
+release: all
 	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
-	$(silent)$(MAKE) -C $(BASE_DIR)
 	$(silent)$(MKDIR) $(RELEASE_TEMP_DIR)
 	$(silent)$(SVN) export -q $(BASE_DIR) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME)
 	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz  ==="
@@ -318,6 +316,16 @@ release:
 	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz $(EXPORT_RELEASES_DIR)
 	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
 
+# doxy target also exists only for the root of the tree
+doxy:
+	$(DOXYGEN)
+else
+release doxy:
+	@echo -e "Target $@ can be run only when from the root of the source tree, aborting..."
+	@exit 1
+
+endif
+
 help:
 	@echo -e "make/make all     : Build the targets and the dependencies"
 	@echo -e "make local_all    : Build the targets without checking for dependencies"
@@ -328,6 +336,6 @@ help:
 	@echo -e "make help         : Display this help message"
 
 
-.PHONY: all local_all clean local_clean distclean help .prereqs release .local_all__* .local_clean__*
+.PHONY: all local_all clean local_clean distclean help .prereqs release doxy .local_all__* .local_clean__*
 
 endif

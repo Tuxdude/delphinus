@@ -24,17 +24,18 @@
 ifndef DELPHINUS_UTILS_MK
 DELPHINUS_UTILS_MK := 1
 
-TOUCH := touch
-CD := cd
-CP := cp
-MV := mv
-RM := rm -f
+TOUCH        := touch
+CD           := cd
+CP           := cp
+MV           := mv
+RM           := rm -f
 RM_RECURSIVE := rm -rf
-MKDIR := mkdir -p
-RMDIR := rmdir --ignore-fail-on-non-empty
-GREP := grep
-SED := sed
-SVN := svn
-TAR := tar
+MKDIR        := mkdir -p
+RMDIR        := rmdir --ignore-fail-on-non-empty
+GREP         := grep
+SED          := sed
+SVN          := svn
+TAR          := tar
+DOXYGEN      := doxygen
 
 endif
