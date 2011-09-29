@@ -318,11 +318,11 @@ release: all
 
 # doxy target also exists only for the root of the tree
 doxy:
-	$(DOXYGEN)
+	$(silent)$(DOXYGEN)
 else
 release doxy:
 	@echo -e "Target $@ can be run only when from the root of the source tree, aborting..."
-	@exit 1
+	$(silent)exit 1
 
 endif
 

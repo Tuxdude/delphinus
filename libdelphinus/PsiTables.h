@@ -22,6 +22,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  \file   PsiTables.h
+ *  \brief  Types and data structures for parsing PSI and other tables
+ *          transmitted within sections.
+ *
+ *  Contains data structures, types and helper methods to parse sections as
+ *  well as standard PSI tables found within a Transport Stream (TS).
+ */
+
 #ifndef DELPHINUS_PSI_TABLES_H
 #define DELPHINUS_PSI_TABLES_H
 

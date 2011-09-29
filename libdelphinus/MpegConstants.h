@@ -22,18 +22,39 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  \file   MpegConstants.h
+ *  \brief  Constants related to MPEG2, DVB, ATSC, SCTE and related standards.
+ *
+ *  This file defines all the standard constants available in the various
+ *  digital television standards such as MPEG-2, DVB, ATSC, SCTE and related
+ *  ones.
+ */
+
 #ifndef DELPHINUS_MPEG_CONSTANTS_H
 #define DELPHINUS_MPEG_CONSTANTS_H
 #include "common/DelphinusUtils.h"
 
+/**
+ *  \brief  The namespace in which all the MPEG related constants are defined.
+ *
+ *  All the constants in the file MpegConstants.h are defined under the
+ *  MpegConstants namespace.
+ */
 namespace MpegConstants
 {
-    enum PacketSize
+/**
+ *  \brief  Constants for TS Packet sizes.
+ */
+    enum TsPacketSize
     {
             PACKET_SIZE_TS              = 188,
             PACKET_SIZE_TTS             = 192
     };
 
+/**
+ *  \brief  Constants for standard PID values.
+ */
     enum Pid
     {
             PID_PAT                     = 0x0000,
@@ -53,6 +74,9 @@ namespace MpegConstants
             PID_NULL                    = 0x1FFF
     };
 
+/**
+ *  \brief  Constants for Stream IDs in the PES header.
+ */
     enum PesStreamId
     {
             STREAM_ID_PROGRAM_STREAM_MAP = 0xBC,
@@ -79,6 +103,9 @@ namespace MpegConstants
             STREAM_ID_PROGRAM_STREAM_DIR = 0xFF
     };
 
+/**
+ *  \brief  Constants for Stream Type values in the PMT.
+ */
     enum PmtStreamType
     {
             STREAM_TYPE_RESERVED                        = 0x00,
@@ -144,6 +171,9 @@ namespace MpegConstants
             STREAM_TYPE_USER_PRIVATE_END                = 0xFF
     };
 
+/**
+ *  \brief  Constants for Table ID values in the section header.
+ */
     enum PsiTableId
     {
             TABLE_PAT                           = 0x00,
@@ -187,6 +217,9 @@ namespace MpegConstants
             TABLE_FORBIDDEN                     = 0xFF
     };
 
+/**
+ *  \brief  Constants for Tags used in the Descriptors.
+ */
     enum DescriptorTag
     {
         // From ISO 13818-1

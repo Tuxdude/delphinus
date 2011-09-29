@@ -21,6 +21,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  \file   TsFile.h
+ *  \brief  A file abstraction to handle raw TS files.
+ *
+ *  Defines TsFile class for abstracting a Transport Stream (TS) file,
+ *  accessing the file as individual TS packets, and various other helper
+ *  methods.
+ */
+
 #ifndef DELPHINUS_TSFILE_H
 #define DELPHINUS_TSFILE_H
 #include <cstdio>
@@ -28,27 +37,65 @@
 #include "Pes.h"
 #include "PsiTables.h"
 
-// view lets you view the packet in buffer, and the returned pointer
-// might not be valid after a next call to viewPacket
-// Use copy() method of TsPacket to make the packet permanent in memory
+/**
+ *  \brief  A file abstraction to handle raw TS files.
+ *
+ *  TsFile provides an abstraction for a Transport Stream (TS) file and
+ *  provides the ability to access the TS file as individual TS packets. It
+ *  also parses the PAT, PMT and other standard tables present in the TS and
+ *  populates the metadata on opening the file.
+ */
 
 class TsFile
 {
     public:
+/**
+ *  \brief  PAT information.
+ */
         struct PatInfo
         {
+/**
+ *  \brief  Packet number(starts at 0) in the TS file where the PAT was located.
+ */
             uint64_t packetNumber;
+/**
+ *  \brief  Transport Stream ID mentioned in the PAT.
+ */
             uint16_t transportStreamId;
+/**
+ *  \brief  List of all the programs mentioned in the PAT.
+ */
             PatSection::ProgramList programList;
         };
+/**
+ *  \brief  PMT information.
+ */
         struct PmtInfo
         {
+/**
+ *  \brief  Packet number(starts at 0) in the TS file where the PMT was located.
+ */
             uint64_t packetNumber;
+/**
+ *  \brief  PMT PID.
+ */
             uint16_t pmtPid;
+/**
+ *  \brief  Program number mentioned in the PMT.
+ */
             uint16_t programNumber;
+/**
+ *  \brief  PCR PID of the program mentioned in the PMT.
+ */
             uint16_t pcrPid;
+/**
+ *  \brief  List of all the streams mentioned in the PMT.
+ */
             PmtSection::StreamList streamList;
         };
+/**
+ *  \brief  A list of PMTs.
+ */
         typedef std::list<PmtInfo> PmtInfoList;
 
     private:
@@ -91,27 +138,82 @@ class TsFile
         TsFile();
         ~TsFile();
 
-        // Opens a given file and checks if it is valid
+/**
+ *  \brief  Opens a given file. To check if it is a valid TS file make use of
+ *          isValid() instead.
+ *  \param  fileName The filename can be absolute or relative and is passed
+ *          as-is to fopen.
+ *  \return true if file was opened successfully, false otherwise.
+ */
         bool open(const char* fileName);
-        // Closes the currently open file
+/**
+ *  \brief  Close the file currently opened by the TsFile handle.
+ */
         void close();
-        // Checks and returns if the last opened file is valid or not
+/**
+ *  \brief  Check if the currently opened file is a valid TS file.
+ *  \return valid TS file or not.
+ */
         bool isValid();
-        // View the packet - call to any of the next view function may
-        // make this memory invalid
-        // Caller should not free up the memory returned, TsFile takes
-        // care of freeing up the memory
-        // The packet can be persisted in the memory by calling the copy()
-        // method of TsPacket
+/**
+ *  \brief  View a TS packet by packet number.
+ *          \warning The validity of the TsPacket handle is only till the
+ *          next call to viewNextPacket(), viewPreviousPacket(), or
+ *          viewPacketByNumber() or any other seek operations in TsFile.
+ *          \warning To persist the TsPacket by allocating memory on the heap
+ *          use the TsPacket::copy() method.
+ *  \param  packetNumber Packet number from the beginning of the file.
+ *  \return TsPacket handle of the packet number on success, NULL otherwise.
+ */
         TsPacket* viewPacketByNumber(uint64_t packetNumber);
+//      FIXME: add this functionality later
 //        TsPacket* viewPacketByPid(uint16_t pid);
+/**
+ *  \brief  View the next TS packet with the reference being the packet
+ *          number in the last call to viewPacketByNumber() /
+ *          viewNextPacket() / viewPreviousPacket(), whichever was more recent.
+ *          \warning The validity of the TsPacket handle is only till the
+ *          next call to viewNextPacket(), viewPreviousPacket(), or
+ *          viewPacketByNumber() or any other seek operations in TsFile.
+ *          \warning To persist the TsPacket by allocating memory on the heap
+ *          use the TsPacket::copy() method.
+ *  \return TsPacket handle for the next packet, NULL otherwise.
+ */
         TsPacket* viewNextPacket();
+/**
+ *  \brief  View the previous TS packet with the reference being the packet
+ *          number in either the last call to viewPacketByNumber() /
+ *          viewNextPacket() / viewPreviousPacket(), whichever was more recent.
+ *          \warning The validity of the TsPacket handle is only till the
+ *          next call to viewNextPacket(), viewPreviousPacket(), or
+ *          viewPacketByNumber() or any other seek operations in TsFile.
+ *          \warning To persist the TsPacket by allocating memory on the heap
+ *          use the TsPacket::copy() method.
+ *  \return TsPacket handle for the previous packet, NULL otherwise.
+ */
         TsPacket* viewPreviousPacket();
 
+/**
+ *  \brief  Get the PAT info populated when opening the file.
+ *  \return PAT Info.
+ */
         const PatInfo& getPatInfo();
+/**
+ *  \brief  Get the PMT information list populated when opening the file.
+ *  \return List of PMT Info(s).
+ */
         const PmtInfoList& getPmtInfoList();
+// FIXME: Implement it later
 //        bool seek(uint64_t offset);
+/**
+ *  \brief  Get the file size.
+ *  \return File size.
+ */
         uint64_t getFileSize();
+/**
+ *  \brief  Get the size of the packets in the TS file.
+ *  \return Packet size.
+ */
         uint8_t getPacketSize();
 };
 

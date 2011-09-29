@@ -28,7 +28,6 @@
  *
  *  Contains all the data structures, types and methods for handling a
  *  Transport Stream (TS) packet and the fields within.
- *
  */
 
 #ifndef DELPHINUS_TS_H
