@@ -51,17 +51,30 @@ DEP_DIR_NAME := .dep
 # Flags can also be set based on ARCH
 # NOTE: Do not remove the empty initialization as immediate variables,
 # failing which Makefile performance will degrade
-ARCH_FLAGS :=
+
+# Architecture specific flags (set it based on ARCH)
+ARCH_FLAGS         :=
+# Optimization flags
 OPTIMIZATION_FLAGS :=
-WARN_FLAGS :=
-WARN_C_FLAGS :=
-WARN_CXX_FLAGS :=
-COMMON_FLAGS :=
-INC_PATH :=
-CFLAGS :=
-CXXFLAGS :=
-CPPFLAGS :=
-LDFLAGS :=
+# Common Warning flags (used for both C and C++)
+WARN_FLAGS         :=
+# Warning flags (used only for C programs)
+WARN_C_FLAGS       :=
+# Warning flags (used only for C++ programs)
+WARN_CXX_FLAGS     :=
+# Any other common flags (used for both C and C++)
+COMMON_FLAGS       :=
+# Include 
+INC_FLAGS          :=
+# The usual CFLAGS
+CFLAGS             :=
+# The usual CXXFLAGS
+CXXFLAGS           :=
+# The usual CPPFLAGS
+CPPFLAGS           :=
+# The usual LDFLAGS
+LDFLAGS            :=
+
 
 # Final flag to indicate config.mk was actually parsed
 DELPHINUS_CONFIGURED := yes
