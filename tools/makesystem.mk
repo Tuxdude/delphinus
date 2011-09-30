@@ -74,7 +74,7 @@ define ColorizeExecWithMsg
     $(silent)if $(TEST) -e $(TEMP_BUILD_ERROR); then STATUS="$(COLOR_ERRORS)" && RC=1;\
     elif $(TEST) -s $(TEMP_BUILD_LOG); then STATUS="$(COLOR_WARNINGS)" && RC=0;\
     else STATUS="$(3)" && RC=0; fi &&\
-    $(ECHO) "\n$${STATUS}===  $(1)  ===$(COLOR_RESET)" &&\
+    $(ECHO) "\n===  $${STATUS}$(1)$(COLOR_RESET)  ===" &&\
     $(CAT) $(TEMP_BUILD_LOG) && $(CLEANUP_TEMP_BUILD_FILES) && exit $${RC};
 endef
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
@@ -192,7 +192,7 @@ ifneq ($(EXPORT_BINS),)
     EXPORT_LIST += $(notdir $(EXPORT_BINS))
 endif
 ifneq ($(EXPORT_ALL_CMD),)
-    EXPORT_DIST := $(call $(EXEC_USING),Exporting $(EXPORT_LIST) ARCH=$(ARCH)$(COLOR_RESET),$(EXPORT_ALL_CMD),$(COLOR_EXPORT))
+    EXPORT_DIST := $(call $(EXEC_USING),Exporting $(EXPORT_LIST) ARCH=$(ARCH),$(EXPORT_ALL_CMD),$(COLOR_EXPORT))
 endif
 
 # Clean-up files and directories
