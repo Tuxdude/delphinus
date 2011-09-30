@@ -74,6 +74,15 @@ BUILD_ARCHS := $(filter $(ALL_ARCHS),$(BUILD_ARCHS))
 # Make sure all is the first target
 all:
 
+NO_COLOR := \x1b[0m
+OK_COLOR := \x1b[32;01m
+ERROR_COLOR := \x1b[31;01m
+WARN_COLOR := \x1b[33;01m
+
+OK_STRING := $(OK_COLOR)[OK]$(NO_COLOR)
+ERROR_STRING := $(ERROR_COLOR)[ERRORS]$(NO_COLOR)
+WARN_STRING :=$(WARN_COLOR)[WARNINGS]$(NO_COLOR)
+
 ifneq ($(ARCH),)
 # When ARCH is set
 
@@ -191,15 +200,17 @@ endif
 # Rules for building object files
 $(BUILD_DIR)/%.o: %.cpp
 	@echo -e "\n===  $< -> $@  ==="
-	$(silent)$(MAKEDEPEND_CXX) $(CXXFLAGS) $(CPPFLAGS) -MM -MF $(DEP_DIR)/$*.dep -MT $@ $<
+	$(silent)$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -MMD -MF $(DEP_DIR)/$*.dep -MT $@ -o $@ 2> temp.log || touch temp.errors
+	$(silent)if test -e temp.errors; then STOP=1 && RESULT="$(ERROR_STRING)"; elif test -s temp.log; then STOP=0 && WARN=1 && RESULT="$(WARN_STRING)"; else STOP=0 && WARN=0 && RESULT="$(OK_STRING)"; fi; if [ $$STOP == 1 ]; then echo -e $$RESULT && cat temp.log && exit 1; elif [ $$WARN == 1 ]; then echo -e $$RESULT && cat temp.log; else echo -e $$RESULT; fi;
+	@$(RM) -f temp.errors temp.log
 	$(silent)$(GENERATE_DEP_FILES)
-	$(silent)$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o: %.c
 	@echo -e "\n===  $< -> $@  ==="
-	$(silent)$(MAKEDEPEND_C) $(CFLAGS) $(CPPFLAGS) -MM -o $(DEP_DIR)/$*.dep $<
+	$(silent)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(DEP_DIR)/$*.dep -MT $@ -o $@ 2> temp.log || touch temp.errors
+	$(silent)if test -e temp.errors; then STOP=1 && RESULT="$(ERROR_STRING)"; elif test -s temp.log; then STOP=0 && WARN=1 && RESULT="$(WARN_STRING)"; else STOP=0 && WARN=0 && RESULT="$(OK_STRING)"; fi; if [ $$STOP == 1 ]; then echo -e $$RESULT && cat temp.log && exit 1; elif [ $$WARN == 1 ]; then echo -e $$RESULT && cat temp.log; else echo -e $$RESULT; fi;
+	@$(RM) -f temp.errors temp.log
 	$(silent)$(GENERATE_DEP_FILES)
-	$(silent)$(CC) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 # Rules for building/cleaning only the current dir
 local_all: $(TARGET)
