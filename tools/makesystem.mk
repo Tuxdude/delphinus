@@ -40,6 +40,7 @@ endif
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
 include $(BASE_DIR)/tools/config.mk
+include $(BASE_DIR)/tools/colors.mk
 
 # If config.mk is not proper, bail out
 ifneq ($(DELPHINUS_CONFIGURED),yes)
@@ -57,14 +58,37 @@ else
 endif
 
 # Helpful functions
+# ExecWithMsg
+# $(1) - Message
+# $(2) - Command to be executed
 define ExecWithMsg
-  @echo -e "\n=== $(1)  ==="
-  $(silent)$(2)
+    $(silent)$(ECHO) "\n===  $(1)  ==="
+    $(silent)$(2)
+endef
+# ColorizeExecWithMsg
+# $(1) - Message
+# $(2) - Command
+# $(3) - Color for normal messages
+define ColorizeExecWithMsg
+    $(silent)$(2) 2>$(TEMP_BUILD_LOG) || $(TOUCH) $(TEMP_BUILD_ERROR)
+    $(silent)if $(TEST) -e $(TEMP_BUILD_ERROR); then STATUS="$(COLOR_ERRORS)" && RC=1;\
+    elif $(TEST) -s $(TEMP_BUILD_LOG); then STATUS="$(COLOR_WARNINGS)" && RC=0;\
+    else STATUS="$(3)" && RC=0; fi &&\
+    $(ECHO) "\n$${STATUS}===  $(1)  ===$(COLOR_RESET)" &&\
+    $(CAT) $(TEMP_BUILD_LOG) && $(CLEANUP_TEMP_BUILD_FILES) && exit $${RC};
 endef
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
+# Exports Base directory and release directory
 EXPORT_BASE_DIR := $(BASE_DIR)/$(EXPORT_BASE_DIR_NAME)
 EXPORT_RELEASES_DIR := $(EXPORT_BASE_DIR)/$(EXPORT_RELEASES_DIR_NAME)
+
+# To colorize or not
+ifeq ($(DISABLE_COLORS),yes)
+    EXEC_USING := ExecWithMsg
+else
+    EXEC_USING := ColorizeExecWithMsg
+endif
 
 # Remove duplicates in BUILD_ARCHS
 BUILD_ARCHS := $(sort $(BUILD_ARCHS))
@@ -74,17 +98,12 @@ BUILD_ARCHS := $(filter $(ALL_ARCHS),$(BUILD_ARCHS))
 # Make sure all is the first target
 all:
 
-NO_COLOR := \x1b[0m
-OK_COLOR := \x1b[32;01m
-ERROR_COLOR := \x1b[31;01m
-WARN_COLOR := \x1b[33;01m
-
-OK_STRING := $(OK_COLOR)[OK]$(NO_COLOR)
-ERROR_STRING := $(ERROR_COLOR)[ERRORS]$(NO_COLOR)
-WARN_STRING :=$(WARN_COLOR)[WARNINGS]$(NO_COLOR)
-
 ifneq ($(ARCH),)
 # When ARCH is set
+
+# Build and dependecy directories
+BUILD_DIR := $(ARCH)
+DEP_DIR := $(BUILD_DIR)/$(DEP_DIR_NAME)
 
 # Setting up exports dir
 EXPORT_TRIGGER := .export_$(ARCH)
@@ -98,33 +117,60 @@ endif
 EXPORT_LIBS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_LIBS_DIR_NAME)
 EXPORT_BINS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_BINS_DIR_NAME)
 
-# Setup compilation and linker flags
-ARCH_FLAGS += $(TOOLCHAIN_ARCH_FLAGS)
-OPTIMIZATION_FLAGS += -O3
-WARN_FLAGS += -W -Wall -Wextra -Wno-long-long -Winline -Winit-self -Wwrite-strings \
-    -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith -Wmissing-declarations \
-    -Wmissing-include-dirs -Wshadow -Wwrite-strings
-WARN_C_FLAGS += -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
-COMMON_FLAGS += $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
-INCPATH += -I. -I$(EXPORT_HEADERS_BASE_DIR)
+# Temporary build log file used for colorizing the output
+TEMP_BUILD_LOG := .build.log
+TEMP_BUILD_ERROR := .build.error
+CLEANUP_TEMP_BUILD_FILES := $(RM_RECURSIVE) $(TEMP_BUILD_LOG) $(TEMP_BUILD_ERROR)
+$(shell $(CLEANUP_TEMP_BUILD_FILES))
 
-CFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
-CFLAGS += -std=gnu99
+# Setup compilation and linker flags
+ARCH_FLAGS         += $(TOOLCHAIN_ARCH_FLAGS)
+OPTIMIZATION_FLAGS += -O3
+WARN_FLAGS         += -W -Wall -Wextra -Wno-long-long -Winline -Winit-self \
+    -Wwrite-strings -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith \
+    -Wmissing-declarations -Wmissing-include-dirs -Wshadow -Wwrite-strings
+WARN_C_FLAGS       += -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
+COMMON_FLAGS       += $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
+INCPATH            += -I. -I$(EXPORT_HEADERS_BASE_DIR)
+
+CFLAGS   += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
+CFLAGS   += -std=gnu99
 CXXFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_CXX_FLAGS)
 CXXFLAGS += -std=gnu++0x
 CPPFLAGS += $(INCPATH)
-LDFLAGS += -Wl,-O3 -Wl-z,defs
-LDFLAGS += -L$(EXPORT_LIBS_DIR)
+LDFLAGS  += -Wl,-O3 -Wl-z,defs
+LDFLAGS  += -L$(EXPORT_LIBS_DIR)
 
 LINKER := $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))
 LDARGS = -o $@ $(filter %.o,$^) $(LDFLAGS) $(LINKMAP)
 LDARGS += $(if $(findstring $(CC), $(LINKER)),$(CFLAGS),$(CXXFLAGS))
 
-# Commands for various types of linking
-LINK = $(call ExecWithMsg, "Linking $@", $(LINKER) $(LDARGS))
-LINK_C = $(call ExecWithMsg, "Linking $@", $(CC) $(LDARGS))
-LINK_SHARED = $(call ExecWithMsg, "Linking Shared library $@", $(LINKER) $(LDARGS) -shared)
-LINK_STATIC = $(call ExecWithMsg, "Linking Static library $@", $(AR) cru $@ $^)
+# Commands for various types of compilation and linking
+COMPILE_CXX_CMD = $(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -MMD -MF $(DEP_DIR)/$*.dep -MT $@ -o $@
+COMPILE_C_CMD   = $(CC) -c $(CXXFLAGS) $(CPPFLAGS) $< -MMD -MF $(DEP_DIR)/$*.dep -MT $@ -o $@
+COMPILE_CXX     = $(call $(EXEC_USING),$< -> $@,$(COMPILE_CXX_CMD),$(COLOR_COMPILE_OK))
+COMPILE_C       = $(call $(EXEC_USING),$< -> $@,$(COMPILE_C_CMD),$(COLOR_COMPILE_OK))
+LINK            = $(call $(EXEC_USING),Linking $@, $(LINKER) $(LDARGS),$(COLOR_LINK_OK))
+LINK_C          = $(call $(EXEC_USING),Linking $@, $(CC) $(LDARGS),$(COLOR_LINK_OK))
+LINK_SHARED     = $(call $(EXEC_USING),Linking Shared library $@, $(LINKER) $(LDARGS) -shared,$(COLOR_LINK_OK))
+LINK_STATIC     = $(call $(EXEC_USING),Linking Static library $@, $(AR) cru $@ $^,$(COLOR_LINK_OK))
+
+# Handle header file dependecies
+GENERATE_DEP_FILES = $(CP) $(DEP_DIR)/$*.dep $(DEP_DIR)/$*.d; sed -e 's/\#.*//'\
+    -e 's/^[^:]*: *//' -e 's/ *\\$$//' -e '/^$$/ d' -e 's/$$/ :/' <\
+    $(DEP_DIR)/$*.dep >> $(DEP_DIR)/$*.d; $(RM) $(DEP_DIR)/$*.dep
+ifneq ($(MAKECMDGOALS),local_clean)
+ifneq ($(MAKECMDGOALS),dist_clean)
+    CDEPS := $(patsubst %.c, $(DEP_DIR)/%.d, $(filter %.c, $(SOURCES)))
+    CXXDEPS := $(patsubst %.cpp, $(DEP_DIR)/%.d, $(filter %.cpp, $(SOURCES)))
+    ifneq ($(CDEPS),)
+        -include $(CDEPS)
+    endif
+    ifneq ($(CXXDEPS),)
+        -include $(CXXDEPS)
+    endif
+endif
+endif
 
 # Commands for exporting, and adding exported files to cleanup list
 EXPORT_ALL_CMD :=
@@ -146,12 +192,8 @@ ifneq ($(EXPORT_BINS),)
     EXPORT_LIST += $(notdir $(EXPORT_BINS))
 endif
 ifneq ($(EXPORT_ALL_CMD),)
-    EXPORT_DIST := $(call ExecWithMsg, "Exporting $(EXPORT_LIST) ARCH=$(ARCH)", $(EXPORT_ALL_CMD))
+    EXPORT_DIST := $(call $(EXEC_USING),Exporting $(EXPORT_LIST) ARCH=$(ARCH)$(COLOR_RESET),$(EXPORT_ALL_CMD),$(COLOR_EXPORT))
 endif
-
-# Build and dependecy directories
-BUILD_DIR := $(ARCH)
-DEP_DIR := $(BUILD_DIR)/$(DEP_DIR_NAME)
 
 # Clean-up files and directories
 CLEANUP_FILES += $(BUILD_DIR) $(EXPORTED_FILES)
@@ -177,46 +219,20 @@ else
 all: $(TARGET)
 endif
 
-# Handle header file dependecies
-MAKEDEPEND_C := $(CC)
-MAKEDEPEND_CXX := $(CXX)
-GENERATE_DEP_FILES = $(CP) $(DEP_DIR)/$*.dep $(DEP_DIR)/$*.d; sed -e 's/\#.*//'\
-    -e 's/^[^:]*: *//' -e 's/ *\\$$//' -e '/^$$/ d' -e 's/$$/ :/' <\
-    $(DEP_DIR)/$*.dep >> $(DEP_DIR)/$*.d; $(RM) $(DEP_DIR)/$*.dep
-
-ifneq ($(MAKECMDGOALS),local_clean)
-ifneq ($(MAKECMDGOALS),dist_clean)
-    CDEPS := $(patsubst %.c, $(DEP_DIR)/%.d, $(filter %.c, $(SOURCES)))
-    CXXDEPS := $(patsubst %.cpp, $(DEP_DIR)/%.d, $(filter %.cpp, $(SOURCES)))
-    ifneq ($(CDEPS),)
-        -include $(CDEPS)
-    endif
-    ifneq ($(CXXDEPS),)
-        -include $(CXXDEPS)
-    endif
-endif
-endif
-
 # Rules for building object files
 $(BUILD_DIR)/%.o: %.cpp
-	@echo -e "\n===  $< -> $@  ==="
-	$(silent)$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -MMD -MF $(DEP_DIR)/$*.dep -MT $@ -o $@ 2> temp.log || touch temp.errors
-	$(silent)if test -e temp.errors; then STOP=1 && RESULT="$(ERROR_STRING)"; elif test -s temp.log; then STOP=0 && WARN=1 && RESULT="$(WARN_STRING)"; else STOP=0 && WARN=0 && RESULT="$(OK_STRING)"; fi; if [ $$STOP == 1 ]; then echo -e $$RESULT && cat temp.log && exit 1; elif [ $$WARN == 1 ]; then echo -e $$RESULT && cat temp.log; else echo -e $$RESULT; fi;
-	@$(RM) -f temp.errors temp.log
+	$(COMPILE_CXX)
 	$(silent)$(GENERATE_DEP_FILES)
 
 $(BUILD_DIR)/%.o: %.c
-	@echo -e "\n===  $< -> $@  ==="
-	$(silent)$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(DEP_DIR)/$*.dep -MT $@ -o $@ 2> temp.log || touch temp.errors
-	$(silent)if test -e temp.errors; then STOP=1 && RESULT="$(ERROR_STRING)"; elif test -s temp.log; then STOP=0 && WARN=1 && RESULT="$(WARN_STRING)"; else STOP=0 && WARN=0 && RESULT="$(OK_STRING)"; fi; if [ $$STOP == 1 ]; then echo -e $$RESULT && cat temp.log && exit 1; elif [ $$WARN == 1 ]; then echo -e $$RESULT && cat temp.log; else echo -e $$RESULT; fi;
-	@$(RM) -f temp.errors temp.log
+	$(COMPILE_C)
 	$(silent)$(GENERATE_DEP_FILES)
 
 # Rules for building/cleaning only the current dir
 local_all: $(TARGET)
 
 local_clean:
-	$(call ExecWithMsg, "Cleaning `pwd` ARCH=$(ARCH)", $(RM_RECURSIVE) $(CLEANUP_FILES); $(REMOVE_EXPORT_HEADERS_PREFIX_DIR))
+	$(call $(EXEC_USING),Cleaning `pwd` ARCH=$(ARCH),$(RM_RECURSIVE) $(CLEANUP_FILES); $(REMOVE_EXPORT_HEADERS_PREFIX_DIR),$(COLOR_CLEAN))
 
 # End ARCH is set
 else
@@ -316,13 +332,13 @@ release: all
 	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
 	$(silent)$(MKDIR) $(RELEASE_TEMP_DIR)
 	$(silent)$(SVN) export -q $(BASE_DIR) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME)
-	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz  ==="
+	@$(ECHO) "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz  ==="
 	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) czf $(DELPHINUS)-$(BRANCH_NAME).tar.gz $(DELPHINUS)-$(BRANCH_NAME)
 	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz $(EXPORT_RELEASES_DIR)
-	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2  ==="
+	@$(ECHO) "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2  ==="
 	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) cjf $(DELPHINUS)-$(BRANCH_NAME).tar.bz2 $(DELPHINUS)-$(BRANCH_NAME)
 	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2 $(EXPORT_RELEASES_DIR)
-	@echo -e "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz  ==="
+	@$(ECHO) "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz  ==="
 	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) cJf $(DELPHINUS)-$(BRANCH_NAME).tar.xz $(DELPHINUS)-$(BRANCH_NAME)
 	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz $(EXPORT_RELEASES_DIR)
 	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
@@ -332,19 +348,19 @@ doxy:
 	$(silent)$(DOXYGEN)
 else
 release doxy:
-	@echo -e "Target $@ can be run only when from the root of the source tree, aborting..."
+	@$(ECHO) "Target $@ can be run only when from the root of the source tree, aborting..."
 	$(silent)exit 1
 
 endif
 
 help:
-	@echo -e "make/make all     : Build the targets and the dependencies"
-	@echo -e "make local_all    : Build the targets without checking for dependencies"
-	@echo -e "make local_clean  : Clean the targets but not the dependencies"
-	@echo -e "make clean        : Clean the targets and the dependencies"
-	@echo -e "make distclean    : Clean the targets, the dependencies and the dist directory(completely)"
-	@echo -e "make release      : Create the release tarballs (requires the codebase to be from an SVN repo)"
-	@echo -e "make help         : Display this help message"
+	@$(ECHO) "make/make all     : Build the targets and the dependencies"
+	@$(ECHO) "make local_all    : Build the targets without checking for dependencies"
+	@$(ECHO) "make local_clean  : Clean the targets but not the dependencies"
+	@$(ECHO) "make clean        : Clean the targets and the dependencies"
+	@$(ECHO) "make distclean    : Clean the targets, the dependencies and the dist directory(completely)"
+	@$(ECHO) "make release      : Create the release tarballs (requires the codebase to be from an SVN repo)"
+	@$(ECHO) "make help         : Display this help message"
 
 
 .PHONY: all local_all clean local_clean distclean help .prereqs release doxy .local_all__* .local_clean__*

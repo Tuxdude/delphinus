@@ -35,6 +35,9 @@ DELPHINUS := delphinus
 # mingw-w32 and mingw-w64 also works
 ONLY_BUILD_ARCHS := $(ARCH_HOST)
 
+# Disable the colorized output from make
+DISABLE_COLORS := no
+
 # Directory names where source/built files will be placed or exported
 EXPORT_BASE_DIR_NAME := dist
 EXPORT_RELEASES_DIR_NAME := release

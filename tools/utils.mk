@@ -24,6 +24,9 @@
 ifndef DELPHINUS_UTILS_MK
 DELPHINUS_UTILS_MK := 1
 
+TEST         := test
+ECHO         := echo -e
+CAT          := cat
 TOUCH        := touch
 CD           := cd
 CP           := cp
