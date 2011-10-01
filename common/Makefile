@@ -24,7 +24,7 @@
 sources := DelphinusUtils.cpp
 BASE_DIR := ..
 
-include $(BASE_DIR)/tools/toolchain.mk
+include $(BASE_DIR)/tools/config.mk
 BUILD_ARCHS := $(ALL_ARCHS)
 
 objs = $(addprefix $(ARCH)/,$(sources:.cpp=.o))

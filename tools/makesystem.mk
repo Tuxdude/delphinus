@@ -37,9 +37,9 @@ ifeq ($(BUILD_ARCHS),)
 endif
 
 # Read the toolchain, utils and config makefiles
+include $(BASE_DIR)/tools/config.mk
 include $(BASE_DIR)/tools/toolchain.mk
 include $(BASE_DIR)/tools/utils.mk
-include $(BASE_DIR)/tools/config.mk
 include $(BASE_DIR)/tools/colors.mk
 
 # If config.mk is not proper, bail out

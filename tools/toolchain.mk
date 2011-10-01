@@ -28,18 +28,38 @@ DELPHINUS_TOOLCHAIN_MK := 1
 include $(BASE_DIR)/tools/utils.mk
 
 # Host tool chain
-HOST_TOOLCHAIN_PREFIX      :=
+HOST_TOOLCHAIN_PREFIX      ?=
 # mingw-w32 tool chain
-MINGW_W32_TOOLCHAIN_PREFIX := i686-w64-mingw32-
+MINGW_W32_TOOLCHAIN_PREFIX ?= i686-w64-mingw32-
 # mingw-w64 tool chain
-MINGW_W64_TOOLCHAIN_PREFIX := x86_64-w64-mingw32-
+MINGW_W64_TOOLCHAIN_PREFIX ?= x86_64-w64-mingw32-
 
-# Generate the architecture names from the compiler info
-ARCH_HOST := $(shell $(HOST_TOOLCHAIN_PREFIX)gcc -dumpmachine)
-ARCH_MINGW_W32 := $(shell $(MINGW_W32_TOOLCHAIN_PREFIX)gcc -dumpmachine)
-ARCH_MINGW_W64 := $(shell $(MINGW_W64_TOOLCHAIN_PREFIX)gcc -dumpmachine)
-
-ALL_ARCHS := $(ARCH_HOST) $(ARCH_MINGW_W32) $(ARCH_MINGW_W64)
+# Determine which toolchains are present, only when config.mk doesn't
+# know about it - which is the case as of now.
+# If present, generate the architecture names from the compiler info
+ifeq ($(CONFIG_SELECTED_TOOLCHAINS),no)
+    FIND_TOOLCHAIN_CMD_OPTIONS := 1>/dev/null 2>/dev/null && echo 1
+    ifeq ($(shell which $(HOST_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
+        ARCH_HOST := $(shell $(HOST_TOOLCHAIN_PREFIX)gcc -dumpmachine)
+        ALL_ARCHS += $(ARCH_HOST)
+    endif
+    ifeq ($(shell which $(MINGW_W32_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
+        ARCH_MINGW_W32 := $(shell $(MINGW_W32_TOOLCHAIN_PREFIX)gcc -dumpmachine)
+        ALL_ARCHS += $(ARCH_MINGW_W32)
+    endif
+    ifeq ($(shell which $(MINGW_W64_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
+        ARCH_MINGW_W64 := $(shell $(MINGW_W64_TOOLCHAIN_PREFIX)gcc -dumpmachine)
+        ALL_ARCHS += $(ARCH_MINGW_W64)
+    endif
+else
+ifneq ($(CONFIG_SELECTED_TOOLCHAINS),yes)
+    $(error Invalid config for CONFIG_SELECTED_TOOLCHAINS, aborting...)
+else
+# The configure script has already found out the toolchains to be used
+# Generate architecture names only for those and add them to ALL_ARCHS
+# FIXME
+endif
+endif
 
 ifneq ($(ARCH),)
     TOOLCHAIN_ARCH_CFLAGS   :=

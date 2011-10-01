@@ -24,16 +24,17 @@
 ifndef DELPHINUS_CONFIG_MK
 DELPHINUS_CONFIG_MK := 1
 
-include $(BASE_DIR)/tools/toolchain.mk
-
 DELPHINUS := delphinus
+CONFIG_SELECTED_TOOLCHAINS := no
+
+include $(BASE_DIR)/tools/toolchain.mk
 
 # Leaving this variable blank builds all architectures
 # Add architecture names from toolchain.mk into this variable to build
 # only for those architectures
 # Set only to build for host machine as of now
 # mingw-w32 and mingw-w64 also works
-ONLY_BUILD_ARCHS := $(ARCH_HOST)
+ONLY_BUILD_ARCHS ?=
 
 # Enable a verbose output from makesystem
 VERBOSE ?= no

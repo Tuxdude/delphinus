@@ -23,7 +23,7 @@
 
 BASE_DIR := ..
 
-include $(BASE_DIR)/tools/toolchain.mk
+include $(BASE_DIR)/tools/config.mk
 BUILD_ARCHS := $(ALL_ARCHS)
 
 sources := tsinfo.cpp
