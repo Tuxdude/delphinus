@@ -153,6 +153,7 @@ class TsPacket
         uint8_t* getPayload();
 };
 
+/** \cond DEV */
 /**
  *  \brief  AdaptationField represents the adaptation field within a TS Packet.
  *
@@ -215,6 +216,7 @@ class AdaptationFieldExtension
         bool hasSeamlessSplice();
         void getSeamlessSpliceInfo(uint8_t& spliceType, uint64_t& dtsNextAu);
 };
+/** \endcond DEV */
 
 
 #define TS_TEI_MASK                     0x80

@@ -41,6 +41,10 @@
 
 #include <inttypes.h>
 
+/**
+ *  \brief  This namespace contains the various types, utilities and helper
+ *          methods used by the rest of the Delphinus project.
+ */
 namespace DelphinusUtils
 {
 
@@ -98,19 +102,22 @@ namespace DelphinusUtils
         LOG_DEBUG = 3
     };
 
-    enum
+/** Maximum number of log modules */
+    enum MaxModules
     {
+/** Maximum number of log modules */
         MAX_LOG_MODULES = 32
     };
 
+/** Log levels for all the modules */
     DELPHINUS_UTILS_EXTERN DelphinusLogLevel delphinusLogLevels [MAX_LOG_MODULES];
 
 /**
  *  \brief  Log the given message to the output (stdout/stderr).
- *  \param  module The module from which this log is sent.
+ *  \param  module The module from which this log is sent
  *  \param  level The log level designated.
  *  \param  fmt Format String
- *  \param  ... Variable arguments
+ *  \param  ... Parameters (variable arguments) for the format string
  */
     void LogOutput(uint8_t module, DelphinusLogLevel level, const char* fmt, ...);
 }
