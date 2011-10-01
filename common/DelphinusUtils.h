@@ -33,7 +33,16 @@
 #ifndef DELPHINUS_DELPHINUS_UTILS_H
 #define DELPHINUS_DELPHINUS_UTILS_H
 
+#ifdef DELPHINUS_IN_COMMON_DIR
+#define DELPHINUS_UTILS_EXTERN
+#else
+#define DELPHINUS_UTILS_EXTERN extern
+#endif
+
 #include <inttypes.h>
+
+namespace DelphinusUtils
+{
 
 /**
  *
@@ -44,48 +53,67 @@
  *  and shift operations thereby providing an endianness portable way of
  *  accessing bit fields.
  */
-struct ByteField
-{
+    struct ByteField
+    {
+/** Byte 0 */
+        uint8_t byte0;
+/** Byte 1 */
+        uint8_t byte1;
+/** Byte 2 */
+        uint8_t byte2;
+/** Byte 3 */
+        uint8_t byte3;
+/** Byte 4 */
+        uint8_t byte4;
+/** Byte 5 */
+        uint8_t byte5;
+/** Byte 6 */
+        uint8_t byte6;
+/** Byte 7 */
+        uint8_t byte7;
+/** Byte 8 */
+        uint8_t byte8;
+/** Byte 9 */
+        uint8_t byte9;
+    };
+
 /**
- * \brief Byte 0
+ *
+ *  \brief Enum for various log levels.
+ *    
+ *  The logs can be tagged with different levels which decide the stream in
+ *  which the logs go as well as well as conditionally ignoring logs from
+ *  different levels like LOG_DEBUG when it is not required. Refer
+ *  DelphinusUtils::LogOutput() for more details.
  */
-    uint8_t byte0;
+    enum DelphinusLogLevel
+    {
+/** Log Level Error */
+        LOG_ERROR = 0,
+/** Log Level Warning */
+        LOG_WARN  = 1,
+/** Log Level Information */
+        LOG_INFO  = 2,
+/** Log Level Debug */
+        LOG_DEBUG = 3
+    };
+
+    enum
+    {
+        MAX_LOG_MODULES = 32
+    };
+
+    DELPHINUS_UTILS_EXTERN DelphinusLogLevel delphinusLogLevels [MAX_LOG_MODULES];
+
 /**
- * \brief Byte 1
+ *  \brief  Log the given message to the output (stdout/stderr).
+ *  \param  module The module from which this log is sent.
+ *  \param  level The log level designated.
+ *  \param  fmt Format String
+ *  \param  ... Variable arguments
  */
-    uint8_t byte1;
-/**
- * \brief Byte 2
- */
-    uint8_t byte2;
-/**
- * \brief Byte 3
- */
-    uint8_t byte3;
-/**
- * \brief Byte 4
- */
-    uint8_t byte4;
-/**
- * \brief Byte 5
- */
-    uint8_t byte5;
-/**
- * \brief Byte 6
- */
-    uint8_t byte6;
-/**
- * \brief Byte 7
- */
-    uint8_t byte7;
-/**
- * \brief Byte 8
- */
-    uint8_t byte8;
-/**
- * \brief Byte 9
- */
-    uint8_t byte9;
-};
+    void LogOutput(uint8_t module, DelphinusLogLevel level, const char* fmt, ...);
+}
+
 
 #endif

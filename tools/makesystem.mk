@@ -50,11 +50,14 @@ endif
 # Set the shell to bash
 SHELL := /bin/bash -e
 
-# Handle Verbose mode
-ifeq ($(VERBOSE),)
+# Parse the config related options
+ifneq ($(VERBOSE),yes)
     silent := @
 else
     silent :=
+endif
+ifeq ($(PEDANTIC),yes)
+WARN_FLAGS  += -pedantic
 endif
 
 # Helpful functions
@@ -75,7 +78,7 @@ define ColorizeExecWithMsg
     elif $(TEST) -s $(TEMP_BUILD_LOG); then STATUS="$(COLOR_WARNINGS)" && RC=0;\
     else STATUS="$(3)" && RC=0; fi &&\
     $(ECHO) "\n===  $${STATUS}$(1)$(COLOR_RESET)  ===" &&\
-    $(CAT) $(TEMP_BUILD_LOG) && $(CLEANUP_TEMP_BUILD_FILES) && exit $${RC};
+    $(CAT) $(TEMP_BUILD_LOG) 1>&2 && $(CLEANUP_TEMP_BUILD_FILES) && exit $${RC};
 endef
 reverse = $(if $(1),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
@@ -126,19 +129,20 @@ $(shell $(CLEANUP_TEMP_BUILD_FILES))
 # Setup compilation and linker flags
 ARCH_FLAGS         += $(TOOLCHAIN_ARCH_FLAGS)
 OPTIMIZATION_FLAGS += -O3
-WARN_FLAGS         += -W -Wall -Wextra -Wno-long-long -Winline -Winit-self \
-    -Wwrite-strings -Wuninitialized -Wcast-align -Wcast-qual -Wpointer-arith \
-    -Wmissing-declarations -Wmissing-include-dirs -Wshadow -Wwrite-strings
+WARN_FLAGS         += -W -Wall -Wextra -Wno-long-long -Winline -Winit-self
+WARN_FLAGS         += -Wwrite-strings -Wuninitialized -Wcast-align -Wcast-qual
+WARN_FLAGS         += -Wpointer-arith -Wmissing-declarations
+WARN_FLAGS         += -Wmissing-include-dirs -Wshadow -Wwrite-strings
 WARN_C_FLAGS       += -Wold-style-declaration -Wstrict-prototypes -Wmissing-prototypes
-COMMON_FLAGS       += $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe $(ARCH_FLAGS)
+COMMON_FLAGS       += $(WARN_FLAGS) -D_REENTRANT -D__STDC_FORMAT_MACROS -pipe
 INC_FLAGS            += -I. -I$(EXPORT_HEADERS_BASE_DIR)
 
-CFLAGS   += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS)
+CFLAGS   += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_C_FLAGS) $(TOOLCHAIN_ARCH_CFLAGS)
 CFLAGS   += -std=gnu99
-CXXFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_CXX_FLAGS)
+CXXFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_CXX_FLAGS) $(TOOLCHAIN_ARCH_CXXFLAGS)
 CXXFLAGS += -std=gnu++0x
 CPPFLAGS += $(INC_FLAGS)
-LDFLAGS  += -Wl,-O3 -Wl-z,defs -rdynamic
+LDFLAGS  += -Wl,-O3 -Wl-z,defs $(TOOLCHAIN_ARCH_LDFLAGS)
 LDFLAGS  += -L$(EXPORT_LIBS_DIR)
 
 LINKER := $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))

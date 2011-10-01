@@ -240,7 +240,7 @@ class AdaptationFieldExtension
 #define TS_GET_AFC(x)                   ((x->byte3 & TS_AFC_MASK) >> TS_AFC_SHIFT)
 #define TS_GET_CC(x)                    (x->byte3 & TS_CC_MASK)
 
-#define TS_HEADER_START                 ((ByteField*)(start + startOffset))
+#define TS_HEADER_START                 ((DelphinusUtils::ByteField*)(start + startOffset))
 
 inline uint8_t* TsPacket::getStart()
 {

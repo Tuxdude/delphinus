@@ -33,10 +33,16 @@ DELPHINUS := delphinus
 # only for those architectures
 # Set only to build for host machine as of now
 # mingw-w32 and mingw-w64 also works
-ONLY_BUILD_ARCHS := $(ARCH_HOST)
+#ONLY_BUILD_ARCHS := $(ARCH_HOST)
+
+# Enable a verbose output from makesystem
+VERBOSE ?= no
+
+# Enable the bizzare pedantic warnings
+PEDANTIC ?= no
 
 # Disable the colorized output from make
-DISABLE_COLORS := no
+DISABLE_COLORS ?= no
 
 # Directory names where source/built files will be placed or exported
 EXPORT_BASE_DIR_NAME := dist
@@ -53,27 +59,27 @@ DEP_DIR_NAME := .dep
 # failing which Makefile performance will degrade
 
 # Architecture specific flags (set it based on ARCH)
-ARCH_FLAGS         :=
+ARCH_FLAGS         ?=
 # Optimization flags
 OPTIMIZATION_FLAGS :=
 # Common Warning flags (used for both C and C++)
-WARN_FLAGS         :=
+WARN_FLAGS         ?=
 # Warning flags (used only for C programs)
-WARN_C_FLAGS       :=
+WARN_C_FLAGS       ?=
 # Warning flags (used only for C++ programs)
-WARN_CXX_FLAGS     :=
+WARN_CXX_FLAGS     ?=
 # Any other common flags (used for both C and C++)
-COMMON_FLAGS       :=
+COMMON_FLAGS       ?=
 # Include 
-INC_FLAGS          :=
+INC_FLAGS          ?=
 # The usual CFLAGS
-CFLAGS             :=
+CFLAGS             ?=
 # The usual CXXFLAGS
-CXXFLAGS           :=
+CXXFLAGS           ?=
 # The usual CPPFLAGS
-CPPFLAGS           :=
+CPPFLAGS           ?=
 # The usual LDFLAGS
-LDFLAGS            :=
+LDFLAGS            ?=
 
 
 # Final flag to indicate config.mk was actually parsed

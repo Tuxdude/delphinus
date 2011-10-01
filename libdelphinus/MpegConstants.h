@@ -341,7 +341,7 @@ namespace MpegConstants
         TAG_DVB_USER_DEFINED_END            = 0xFE,
         TAG_FORBIDDEN                       = 0xFF
     };
-};
+}
 
 
 #endif

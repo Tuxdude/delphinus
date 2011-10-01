@@ -116,7 +116,7 @@ class PesPacket
 #define PES_GET_LENGTH(x)               ((x->byte4 << PES_LENGTH_SHIFT) |\
                                          (x->byte5))
 
-#define PES_HEADER_START ((ByteField*)(start))
+#define PES_HEADER_START ((DelphinusUtils::ByteField*)(start))
 
 inline bool PesPacket::isValid()
 {

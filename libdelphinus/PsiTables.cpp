@@ -28,6 +28,7 @@
 #include <cstring>
 
 using namespace MpegConstants;
+using namespace DelphinusUtils;
 
 #define GET_LESS(x, y) ((x) < (y) ? (x) : (y))
 

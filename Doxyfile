@@ -684,7 +684,7 @@ EXCLUDE_PATTERNS       = */.svn/*
 
 # We do not want some bitfield macros to be documented or complain with
 # warnings when no documentation exists for them
-EXCLUDE_SYMBOLS        = TS_* PES_* PSI_* PAT_* PMT_* NIT_* CAT_*
+EXCLUDE_SYMBOLS        = TS_* PES_* PSI_* PAT_* PMT_* NIT_* CAT_* DELPHINUS_UTILS_*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or
 # directories that contain example code fragments that are included (see

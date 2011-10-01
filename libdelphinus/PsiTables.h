@@ -527,7 +527,7 @@ class NitSection : public PsiSectionCommon
 #define PSI_GET_SECTION_NUMBER(x)       (x->byte6)
 #define PSI_GET_LAST_SECTION_NUMBER(x)  (x->byte7)
 
-#define PSI_HEADER_START                ((ByteField*)start)
+#define PSI_HEADER_START                ((DelphinusUtils::ByteField*)start)
 
 #define PAT_PROG_NUMBER_SHIFT           8
 #define PAT_PID_MASK                    0x1FFF
@@ -535,7 +535,7 @@ class NitSection : public PsiSectionCommon
 
 #define PAT_GET_PROG_NUMBER(x)          (((x->byte0) << PAT_PROG_NUMBER_SHIFT) | (x->byte1))
 #define PAT_GET_PID(x)                  (((x->byte2 << PAT_PROG_NUMBER_SHIFT) | (x->byte3)) & PAT_PID_MASK)
-#define PAT_PROG_INFO_START             ((ByteField*)(start + offset))
+#define PAT_PROG_INFO_START             ((DelphinusUtils::ByteField*)(start + offset))
 
 #define PMT_PCR_PID_MASK                0x1FFF
 #define PMT_PCR_PID_SHIFT               8

@@ -21,13 +21,27 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+sources := DelphinusUtils.cpp
 BASE_DIR := ..
 
 include $(BASE_DIR)/tools/toolchain.mk
 BUILD_ARCHS := $(ALL_ARCHS)
 
+objs = $(addprefix $(ARCH)/,$(sources:.cpp=.o))
+
+SOURCES := $(sources)
+TARGET = $(ARCH)/libdelphinuscommon.a
 EXPORT_HEADERS_PREFIX_DIR := common
 EXPORT_HEADERS := DelphinusUtils.h
+EXPORT_LIBS = $(TARGET)
+
+ifneq ($(ARCH),$(ARCH_HOST))
+    TARGET = $(ARCH)/libdelphinuscommon.dll
+endif
 
 include $(BASE_DIR)/tools/makesystem.mk
 
+CXXFLAGS += -DDELPHINUS_IN_COMMON_DIR
+
+$(TARGET): $(objs)
+	$(LINK_STATIC)

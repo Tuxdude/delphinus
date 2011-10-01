@@ -29,13 +29,16 @@ using namespace MpegConstants;
 
 //#define DEBUG
 
+#define MODULE_TS 1
+#define CURRENT_MODULE MODULE_TS
+
 #ifdef DEBUG
-#define MSG(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
+#define MSG(fmt, ...); LogOutput(CURRENT_MODULE, DelphinusUtils::LOG_INFO, " " fmt " \n", ##__VA_ARGS__);
 #else
-#define MSG(x, ...); 
+#define MSG(fmt, ...);
 #endif
 
-#define ERR(x, ...); ::fprintf(stderr, " " x " \n", ##__VA_ARGS__);
+#define ERR(fmt, ...); LogOutput(CURRENT_MODULE, DelphinusUtils::LOG_ERROR, " " fmt " \n", ##__VA_ARGS__);
 
 TsPacket::TsPacket()
     :   start(NULL),

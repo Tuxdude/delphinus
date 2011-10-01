@@ -44,6 +44,7 @@ endif
 include $(BASE_DIR)/tools/makesystem.mk
 
 CPPFLAGS += -D_FILE_OFFSET_BITS=64
+LDFLAGS += -ldelphinuscommon
 
 $(TARGET): $(objs)
 	$(LINK_SHARED)
