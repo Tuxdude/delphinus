@@ -353,8 +353,14 @@ release: all
 # doxy target also exists only for the root of the tree
 doxy:
 	$(silent)$(DOXYGEN)
+
+# clocinfo target also exists only for the root of the tree
+clocinfo:
+	$(silent)$(MAKE) distclean
+	$(silent)$(CLOC) --by-file-by-lang --force-lang=make,mk .
+
 else
-release doxy:
+release doxy clocinfo:
 	@$(ECHO) "Target $@ can be run only when from the root of the source tree, aborting..."
 	$(silent)exit 1
 
@@ -370,6 +376,8 @@ help:
 	@$(ECHO) "make help         : Display this help message"
 
 
-.PHONY: all local_all clean local_clean distclean help .prereqs release doxy .local_all__* .local_clean__*
+.PHONY: all local_all clean local_clean distclean help
+.PHONY: release doxy clocinfo
+.PHONY: .prereqs .local_all__* .local_clean__*
 
 endif

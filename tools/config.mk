@@ -33,7 +33,7 @@ DELPHINUS := delphinus
 # only for those architectures
 # Set only to build for host machine as of now
 # mingw-w32 and mingw-w64 also works
-#ONLY_BUILD_ARCHS := $(ARCH_HOST)
+ONLY_BUILD_ARCHS := $(ARCH_HOST)
 
 # Enable a verbose output from makesystem
 VERBOSE ?= no

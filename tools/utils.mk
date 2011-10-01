@@ -40,5 +40,6 @@ SED          := sed
 SVN          := svn
 TAR          := tar
 DOXYGEN      := doxygen
+CLOC         := cloc
 
 endif
