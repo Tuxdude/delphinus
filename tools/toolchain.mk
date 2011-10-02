@@ -27,6 +27,26 @@ DELPHINUS_TOOLCHAIN_MK := 1
 
 include $(BASE_DIR)/tools/utils.mk
 
+FIND_TOOLCHAIN_CMD_OPTIONS := 1>/dev/null 2>/dev/null && echo 1
+define SetupArchNames
+    ifeq ($(shell which $($(1)_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
+        ARCH_$(1) := $(shell $($(1)_TOOLCHAIN_PREFIX)gcc -dumpmachine)
+        ALL_ARCHS += $$(ARCH_$(1))
+    endif
+endef
+
+define SetupArchFlags
+    ifeq ($(ARCH),$(ARCH_$(1)))
+        TOOLCHAIN_PREFIX        := $$($(1)_TOOLCHAIN_PREFIX)
+        TOOLCHAIN_ARCH_CFLAGS   += $$($(1)_CFLAGS)
+        TOOLCHAIN_ARCH_CXXFLAGS += $$($(1)_CXXFLAGS)
+        TOOLCHAIN_ARCH_LDFLAGS  += $$($(1)_LDFLAGS)
+    endif
+endef
+
+TOOLCHAINS := HOST MINGW_W32 MINGW_W64
+
+# Toolchain prefixes
 # Host tool chain
 HOST_TOOLCHAIN_PREFIX      ?=
 # mingw-w32 tool chain
@@ -34,58 +54,46 @@ MINGW_W32_TOOLCHAIN_PREFIX ?= i686-w64-mingw32-
 # mingw-w64 tool chain
 MINGW_W64_TOOLCHAIN_PREFIX ?= x86_64-w64-mingw32-
 
+# Arch specific flags
+HOST_CFLAGS        := -fPIC
+HOST_CXXFLAGS      := -fPIC
+HOST_LDFLAGS       := -rdynamic
+MINGW_W32_CFLAGS   := -Wno-pedantic-ms-format
+MINGW_W32_CXXFLAGS := -Wno-pedantic-ms-format
+MINGW_W32_LDFLAGS  :=
+MINGW_W64_CFLAGS   := -Wno-pedantic-ms-format
+MINGW_W64_CXXFLAGS := -Wno-pedantic-ms-format
+MINGW_W64_LDFLAGS  :=
+
 # Determine which toolchains are present, only when config.mk doesn't
 # know about it - which is the case as of now.
-# If present, generate the architecture names from the compiler info
+ALL_ARCHS :=
 ifeq ($(CONFIG_SELECTED_TOOLCHAINS),no)
-    FIND_TOOLCHAIN_CMD_OPTIONS := 1>/dev/null 2>/dev/null && echo 1
-    ifeq ($(shell which $(HOST_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
-        ARCH_HOST := $(shell $(HOST_TOOLCHAIN_PREFIX)gcc -dumpmachine)
-        ALL_ARCHS += $(ARCH_HOST)
-    endif
-    ifeq ($(shell which $(MINGW_W32_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
-        ARCH_MINGW_W32 := $(shell $(MINGW_W32_TOOLCHAIN_PREFIX)gcc -dumpmachine)
-        ALL_ARCHS += $(ARCH_MINGW_W32)
-    endif
-    ifeq ($(shell which $(MINGW_W64_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
-        ARCH_MINGW_W64 := $(shell $(MINGW_W64_TOOLCHAIN_PREFIX)gcc -dumpmachine)
-        ALL_ARCHS += $(ARCH_MINGW_W64)
-    endif
+    # Generate the architecture names from the compiler info for all
+    # the configured archs.
+    $(foreach toolchain,$(TOOLCHAINS),$(eval $(call SetupArchNames,$(toolchain))))
 else
-ifneq ($(CONFIG_SELECTED_TOOLCHAINS),yes)
-    $(error Invalid config for CONFIG_SELECTED_TOOLCHAINS, aborting...)
-else
-# The configure script has already found out the toolchains to be used
-# Generate architecture names only for those and add them to ALL_ARCHS
-# FIXME
-endif
+    ifneq ($(CONFIG_SELECTED_TOOLCHAINS),yes)
+        $(error Invalid config for CONFIG_SELECTED_TOOLCHAINS, aborting...)
+    else
+        # The configure script has already found out the toolchains to be used
+        # Generate architecture names only for those and add them to ALL_ARCHS
+        # FIXME
+    endif
 endif
 
+# Now set the toolchain binaries only if ARCH is set
+# we have no other way to determine otherwise
 ifneq ($(ARCH),)
-    TOOLCHAIN_ARCH_CFLAGS   :=
-    TOOLCHAIN_ARCH_CXXFLAGS :=
-    TOOLCHAIN_ARCH_LDFLAGS  :=
+    # If an invalid ARCH is set, bail out
     ifneq ($(filter-out $(ALL_ARCHS),$(ARCH)),)
         $(error Invalid value for ARCH, aborting...)
     endif
-    # Now choose the toolchain and architecture specific flags based on ARCH
-    ifeq ($(ARCH),$(ARCH_HOST))
-        TOOLCHAIN_PREFIX        := $(HOST_TOOLCHAIN_PREFIX)
-        TOOLCHAIN_ARCH_CFLAGS   += -fPIC
-        TOOLCHAIN_ARCH_CXXFLAGS += -fPIC
-        TOOLCHAIN_ARCH_LDFLAGS  += -rdynamic
-    endif
-    ifeq ($(ARCH),$(ARCH_MINGW_W32))
-        TOOLCHAIN_PREFIX        := $(MINGW_W32_TOOLCHAIN_PREFIX)
-        TOOLCHAIN_ARCH_CFLAGS   += -Wno-pedantic-ms-format
-        TOOLCHAIN_ARCH_CXXFLAGS += -Wno-pedantic-ms-format
-    endif
-    ifeq ($(ARCH),$(ARCH_MINGW_W64))
-        TOOLCHAIN_PREFIX     := $(MINGW_W64_TOOLCHAIN_PREFIX)
-        TOOLCHAIN_ARCH_CFLAGS   += -Wno-pedantic-ms-format
-        TOOLCHAIN_ARCH_CXXFLAGS += -Wno-pedantic-ms-format
-    endif
 
+    # Choose the toolchain and architecture specific flags based on ARCH
+    $(foreach toolchain,$(TOOLCHAINS),$(eval $(call SetupArchFlags,$(toolchain))))
+
+    # Set up the binaries using the toolchain prefix
     CC      := $(TOOLCHAIN_PREFIX)gcc
     CXX     := $(TOOLCHAIN_PREFIX)g++
     AS      := $(TOOLCHAIN_PREFIX)as

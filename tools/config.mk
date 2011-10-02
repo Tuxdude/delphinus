@@ -62,7 +62,7 @@ DEP_DIR_NAME := .dep
 # Architecture specific flags (set it based on ARCH)
 ARCH_FLAGS         ?=
 # Optimization flags
-OPTIMIZATION_FLAGS :=
+OPTIMIZATION_FLAGS ?=
 # Common Warning flags (used for both C and C++)
 WARN_FLAGS         ?=
 # Warning flags (used only for C programs)
