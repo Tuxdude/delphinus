@@ -1,3 +1,13 @@
 #! /usr/bin/env python
 
+# Command line option, DEFAULT STRING TO SET, Function to parse the command line option (returns the string)
+# Read from the template, create an auto generated file based on the command line options.
 
+# Build/Installation directory
+# Toolchains to use for host, mingw-w32, mingw-w64
+# Disable colors during the build
+# Enable pedantic
+# Enable compile/link commands to be printed
+# CFLAGS
+# CXXFLAGS
+# LDFLAGS
