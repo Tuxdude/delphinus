@@ -79,6 +79,7 @@ else
         # The configure script has already found out the toolchains to be used
         # Generate architecture names only for those and add them to ALL_ARCHS
         # FIXME
+        #-include tools/toolchains-info.mk
     endif
 endif
 
