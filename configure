@@ -11,3 +11,22 @@
 # CFLAGS
 # CXXFLAGS
 # LDFLAGS
+
+inputConfigFile = 'tools/config.mk.template'
+outputConfigFile = 'tools/config.mk'
+
+# Command line option
+# Help message
+# Default value for the config
+# Function to parse the command line option
+# Args to the function, the last argument will be the value of the command line option
+options = [
+        [ '--build-dir', 'Build directory', 'dist', parseFlagBasic, [ 'EXPORT_BASE_DIR_NAME' ] ],
+#        [ '--install-dir', '/usr/local', parseFlagBasic, [ '' ] ]
+        [ '--disable-build-colors', 'no', parseFlagBasic, [ 'DISABLE_COLORS' ] ],
+        [ '--enable-pedantic', 'no', parseFlagBasic, [ 'ENABLE_PEDANTIC' ] ],
+        [ '--enable-verbose-build', 'no', parseFlagBasic, [ 'ENABLE_VERBOSE_BUILD' ] ],
+        [ '--with-cflags', '', parseFlagBasic, [ 'CFLAGS' ] ],
+        [ '--with-cxxflags', '', parseFlagBasic, [ 'CXXFLAGS' ] ],
+        [ '--with-ldflags', '', parseFlagBasic, [ 'LDFLAGS' ] ]
+        ]
