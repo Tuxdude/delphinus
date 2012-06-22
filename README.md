@@ -1,7 +1,7 @@
-This is Delphinus 0.1 alpha
-===========================
+Delphinus 0.1 alpha
+===================
 
-Copyright Copyright (C) 2011 Ashwin (Tuxdude)
+Copyright Copyright (C) 2012 Ash (Tuxdude)
 All rights reserved.
 
 Delphinus is a set of libraries and tools providing functionality as a stream
@@ -23,20 +23,14 @@ directory.
 Enjoy!
 
 
-Support and Reporting Bugs:
-===========================
-http://sourceforge.net/p/delphinus/
-
-
-Group mailing list
-==================
-delphinus-general@lists.sourceforge.net
-Any questions regarding the usage, APIs can be posted to this mailing list.
+Reporting Issues:
+=================
+https://github.com/Tuxdude/delphinus/issues
 
 
 Contact Info, Suggestions, Comments, or Just a Hi :)
 ====================================================
-tuxdude@users.sourceforge.net
+tuxdude.github@gmail.com
 
 
 Copying and distribution of this file, with or without modification,
