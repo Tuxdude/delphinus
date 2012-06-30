@@ -126,7 +126,6 @@ EXPORT_LIBS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_LIBS_DIR_NAME)
 EXPORT_BINS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_BINS_DIR_NAME)
 
 # Setup compilation and linker flags
-ARCH_FLAGS         += $(TOOLCHAIN_ARCH_FLAGS)
 OPTIMIZATION_FLAGS += -O3
 WARN_FLAGS         += -W -Wall -Wextra -Wno-long-long -Winline -Winit-self
 WARN_FLAGS         += -Wwrite-strings -Wuninitialized -Wcast-align -Wcast-qual
@@ -141,7 +140,13 @@ CFLAGS   += -std=gnu99
 CXXFLAGS += $(OPTIMIZATION_FLAGS) $(COMMON_FLAGS) $(WARN_CXX_FLAGS) $(TOOLCHAIN_ARCH_CXXFLAGS)
 CXXFLAGS += -std=gnu++0x
 CPPFLAGS += $(INC_FLAGS)
-LDFLAGS  += -Wl,-O3 -Wl-z,defs $(TOOLCHAIN_ARCH_LDFLAGS)
+LDFLAGS  += -Wl,-O3
+ifeq ($(TOOLCHAIN_ARCH_IS_MINGW),1)
+    LDFLAGS += -Wl,--no-undefined
+else
+    LDFLAGS += -Wl-z,defs
+endif
+LDFLAGS  += $(TOOLCHAIN_ARCH_LDFLAGS)
 LDFLAGS  += -L$(EXPORT_LIBS_DIR)
 
 LINKER := $(if $(filter .cpp, $(suffix $(SOURCES))), $(CXX), $(CC))

@@ -29,11 +29,6 @@ using namespace MpegConstants;
 
 //#define DEBUG
 
-#ifdef WIN32
-#define fseeko(x,y,z) fseeko64(x,y,z)
-#define ftello(x) ftello64(x)
-#endif
-
 #define MODULE_TS_FILE 0
 #define CURRENT_MODULE MODULE_TS_FILE
 

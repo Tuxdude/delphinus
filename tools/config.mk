@@ -58,8 +58,6 @@ DEP_DIR_NAME := .dep
 # NOTE: Do not remove the empty initialization as immediate variables,
 # failing which Makefile performance will degrade
 
-# Architecture specific flags (set it based on ARCH)
-ARCH_FLAGS         ?=
 # Optimization flags
 OPTIMIZATION_FLAGS ?=
 # Common Warning flags (used for both C and C++)

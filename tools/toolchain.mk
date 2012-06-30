@@ -29,7 +29,7 @@ include $(BASE_DIR)/tools/utils.mk
 FIND_TOOLCHAIN_CMD_OPTIONS := 1>/dev/null 2>/dev/null && echo 1
 define SetupArchNames
     ifeq ($(shell which $($(1)_TOOLCHAIN_PREFIX)gcc $(FIND_TOOLCHAIN_CMD_OPTIONS)),1)
-        ARCH_$(1) := $(shell $($(1)_TOOLCHAIN_PREFIX)gcc -dumpmachine)
+        ARCH_$(1) ?= $(shell $($(1)_TOOLCHAIN_PREFIX)gcc -dumpmachine)
         ALL_ARCHS += $$(ARCH_$(1))
     endif
 endef
@@ -40,10 +40,15 @@ define SetupArchFlags
         TOOLCHAIN_ARCH_CFLAGS   += $$($(1)_CFLAGS)
         TOOLCHAIN_ARCH_CXXFLAGS += $$($(1)_CXXFLAGS)
         TOOLCHAIN_ARCH_LDFLAGS  += $$($(1)_LDFLAGS)
+        TOOLCHAIN_ARCH_IS_MINGW += $$($(1)_IS_MINGW)
     endif
 endef
 
 TOOLCHAINS := HOST MINGW_W32 MINGW_W64
+
+ARCH_HOST      := host-gcc
+ARCH_MINGW_W32 := mingw-w32
+ARCH_MINGW_W64 := mingw-w64
 
 # Toolchain prefixes
 # Host tool chain
@@ -57,12 +62,15 @@ MINGW_W64_TOOLCHAIN_PREFIX ?= x86_64-w64-mingw32-
 HOST_CFLAGS        := -fPIC
 HOST_CXXFLAGS      := -fPIC
 HOST_LDFLAGS       := -rdynamic
+HOST_IS_MINGW      := 0
 MINGW_W32_CFLAGS   := -Wno-pedantic-ms-format
 MINGW_W32_CXXFLAGS := -Wno-pedantic-ms-format
 MINGW_W32_LDFLAGS  :=
+MINGW_W32_IS_MINGW := 1
 MINGW_W64_CFLAGS   := -Wno-pedantic-ms-format
 MINGW_W64_CXXFLAGS := -Wno-pedantic-ms-format
 MINGW_W64_LDFLAGS  :=
+MINGW_W64_IS_MINGW := 1
 
 # Determine which toolchains are present, only when config.mk doesn't
 # know about it - which is the case as of now.

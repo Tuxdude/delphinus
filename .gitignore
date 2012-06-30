@@ -4,3 +4,6 @@
 .makefile
 dist/*
 .export_*
+*/host-gcc/*
+*/mingw-w32/*
+*/mingw-w64/*
