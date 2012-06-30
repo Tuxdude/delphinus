@@ -100,6 +100,12 @@ BUILD_ARCHS := $(filter $(ALL_ARCHS),$(BUILD_ARCHS))
 # Make sure all is the first target
 all:
 
+# Temporary build log file used for colorizing the output
+TEMP_BUILD_LOG := .build.log
+TEMP_BUILD_ERROR := .build.error
+CLEANUP_TEMP_BUILD_FILES := $(RM_RECURSIVE) $(TEMP_BUILD_LOG) $(TEMP_BUILD_ERROR)
+$(shell $(CLEANUP_TEMP_BUILD_FILES))
+
 ifneq ($(ARCH),)
 # When ARCH is set
 
@@ -118,12 +124,6 @@ else
 endif
 EXPORT_LIBS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_LIBS_DIR_NAME)
 EXPORT_BINS_DIR := $(EXPORT_BASE_DIR)/$(ARCH)/$(EXPORT_BINS_DIR_NAME)
-
-# Temporary build log file used for colorizing the output
-TEMP_BUILD_LOG := .build.log
-TEMP_BUILD_ERROR := .build.error
-CLEANUP_TEMP_BUILD_FILES := $(RM_RECURSIVE) $(TEMP_BUILD_LOG) $(TEMP_BUILD_ERROR)
-$(shell $(CLEANUP_TEMP_BUILD_FILES))
 
 # Setup compilation and linker flags
 ARCH_FLAGS         += $(TOOLCHAIN_ARCH_FLAGS)
@@ -322,32 +322,32 @@ endif
 
 ifeq ($(BASE_DIR),.)
 # Settings for the release - it can be done only from the root of the tree
-RELEASE_TEMP_DIR := $(EXPORT_RELEASES_DIR)/.release_temp
 ifeq ($(MAKECMDGOALS),release)
-    SVN_INFO_CMD := $(SVN) info $(BASE_DIR)
-    SVN_INFO := $(shell $(SVN_INFO_CMD) 1>/dev/null 2>/dev/null; echo $$?)
-    ifneq ($(SVN_INFO),0)
-        $(error "Cannot build the release files from a non-svn repo, aborting...")
+    GIT_BRANCH_CMD := $(GIT) branch --no-color
+    GIT_BRANCH_INFO := $(shell $(GIT_BRANCH_CMD) 1>/dev/null 2>/dev/null; echo $$?)
+    ifneq ($(GIT_BRANCH_INFO),0)
+        $(error "Cannot build the release files from a non-git repo, aborting...")
     endif
-    BRANCH_NAME := $(shell $(SVN_INFO_CMD) | $(GREP) URL | $(SED) 's/^.*\/\([a-zA-Z0-9.\-]*\)$$/\1/')
+    BRANCH_NAME := $(shell $(GIT_BRANCH_CMD) | $(SED) 's/^\* \(.\+\)$$/\1/')
+
+    RELEASE_TAR_GZ  := $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz
+    RELEASE_TAR_BZ2 := $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2
+    RELEASE_TAR_XZ  := $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz
+    RELEASE_ZIP     := $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).zip
+
+    GENERATE_RELEASE_TAR_GZ  := $(GIT) archive $(BRANCH_NAME) | $(GZIP) > $(RELEASE_TAR_GZ)
+    GENERATE_RELEASE_TAR_BZ2 := $(GIT) archive $(BRANCH_NAME) | $(BZIP2) > $(RELEASE_TAR_BZ2)
+    GENERATE_RELEASE_TAR_XZ  := $(GIT) archive $(BRANCH_NAME) | $(XZ) > $(RELEASE_TAR_XZ)
+    GENERATE_RELEASE_ZIP     := $(GIT) archive --format zip --output $(RELEASE_ZIP) $(BRANCH_NAME)
 endif
 
 # The target release only builds if the entire build goes through although it
 # doesn't require any files to be exported from the build itself
 release: all
-	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
-	$(silent)$(MKDIR) $(RELEASE_TEMP_DIR)
-	$(silent)$(SVN) export -q $(BASE_DIR) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME)
-	@$(ECHO) "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz  ==="
-	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) czf $(DELPHINUS)-$(BRANCH_NAME).tar.gz $(DELPHINUS)-$(BRANCH_NAME)
-	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.gz $(EXPORT_RELEASES_DIR)
-	@$(ECHO) "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2  ==="
-	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) cjf $(DELPHINUS)-$(BRANCH_NAME).tar.bz2 $(DELPHINUS)-$(BRANCH_NAME)
-	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.bz2 $(EXPORT_RELEASES_DIR)
-	@$(ECHO) "\n===  Creating release archive - $(EXPORT_RELEASES_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz  ==="
-	$(silent)$(CD) $(RELEASE_TEMP_DIR) && $(TAR) cJf $(DELPHINUS)-$(BRANCH_NAME).tar.xz $(DELPHINUS)-$(BRANCH_NAME)
-	$(silent)$(MV) $(RELEASE_TEMP_DIR)/$(DELPHINUS)-$(BRANCH_NAME).tar.xz $(EXPORT_RELEASES_DIR)
-	$(silent)$(RM_RECURSIVE) $(RELEASE_TEMP_DIR)
+	$(call $(EXEC_USING),Creating Release Archive $(RELEASE_TAR_GZ),$(GENERATE_RELEASE_TAR_GZ),$(COLOR_RELEASE))
+	$(call $(EXEC_USING),Creating Release Archive $(RELEASE_TAR_BZ2),$(GENERATE_RELEASE_TAR_BZ2),$(COLOR_RELEASE))
+	$(call $(EXEC_USING),Creating Release Archive $(RELEASE_TAR_XZ),$(GENERATE_RELEASE_TAR_XZ),$(COLOR_RELEASE))
+	$(call $(EXEC_USING),Creating Release Archive $(RELEASE_ZIP),$(GENERATE_RELEASE_ZIP),$(COLOR_RELEASE))
 
 # doxy target also exists only for the root of the tree
 doxy:
@@ -371,7 +371,7 @@ help:
 	@$(ECHO) "make local_clean  : Clean the targets but not the dependencies"
 	@$(ECHO) "make clean        : Clean the targets and the dependencies"
 	@$(ECHO) "make distclean    : Clean the targets, the dependencies and the dist directory(completely)"
-	@$(ECHO) "make release      : Create the release tarballs (requires the codebase to be from an SVN repo)"
+	@$(ECHO) "make release      : Create the release tarballs (requires the codebase to be from an Git repo)"
 	@$(ECHO) "make help         : Display this help message"
 
 

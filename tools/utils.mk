@@ -36,8 +36,11 @@ MKDIR        := mkdir -p
 RMDIR        := rmdir --ignore-fail-on-non-empty
 GREP         := grep
 SED          := sed
-SVN          := svn
+GIT          := git
 TAR          := tar
+GZIP         := gzip
+BZIP         := bzip2
+XZ           := xz
 DOXYGEN      := doxygen
 CLOC         := cloc
 
