@@ -44,23 +44,18 @@ uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size);
 
 uint64_t readFile(uint8_t* buffer, FILE* fileHandle, uint64_t size)
 {
-    uint64_t readSize = fread(buffer, size, 1, fileHandle);
-    MSG("Read from file: %lu", readSize);
-    if (readSize == 1)
+    uint64_t readSize;
+    readSize = fread(buffer, 1, size, fileHandle);
+
+    if (readSize == size)
     {
-        return size;
-    }
-    else if (!feof(fileHandle))
-    {
-        MSG("Doing partial file read");
-        readSize = fread(buffer, 1, size, fileHandle);
         MSG("Now read: %lu", readSize);
         return readSize;
     }
-    else
-    {
-        return 0;
-    }
+
+    assert(feof(fileHandle));
+    MSG("%s", readSize > 0 ? "Partial Read" : "EOF!");
+    return readSize;
 }
 
 void TsFile::readFromOffset(uint64_t offset)

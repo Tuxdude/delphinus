@@ -91,6 +91,7 @@ bool TsPacket::parse(uint8_t* data, uint64_t size)
             startOffset = 4;
             if (getSyncByte() != 0x47)
             {
+                ERR("Unable to find the sync byte 0x47!");
                 isValid = false;
             }
             else
